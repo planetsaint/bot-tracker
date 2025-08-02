@@ -25,17 +25,31 @@ const trackingData = new Map();
 
 // Load existing data if available
 const DATA_FILE = path.join(__dirname, 'tracking_data.json');
-try {
-    if (fs.existsSync(DATA_FILE)) {
-        const savedData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-        Object.entries(savedData).forEach(([key, value]) => {
-            trackingData.set(key, value);
-        });
-        console.log('Loaded ' + trackingData.size + ' existing tracking IDs');
+
+function loadData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const savedData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+            trackingData.clear();
+            Object.entries(savedData).forEach(([key, value]) => {
+                trackingData.set(key, value);
+            });
+            console.log('Loaded ' + trackingData.size + ' existing tracking IDs');
+            return true;
+        }
+    } catch (error) {
+        console.error('Error loading data:', error);
     }
-} catch (error) {
-    console.log('No existing data file found, starting fresh');
+    return false;
 }
+
+// Initial data load
+loadData();
+
+// Reload data periodically to catch any external changes
+setInterval(() => {
+    loadData();
+}, 5000); // Reload every 5 seconds
 
 // Periodically save data
 setInterval(() => {
@@ -58,8 +72,18 @@ function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization;
     const expectedAuth = process.env.ADMIN_TOKEN || 'admin-secret-token';
     
-    if (!authHeader || authHeader !== 'Bearer ' + expectedAuth) {
-        return res.status(401).json({ error: 'Unauthorized' });
+    // Log for debugging
+    console.log('Auth attempt - Expected:', expectedAuth, 'Received:', authHeader);
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'No authorization header' });
+    }
+    
+    const receivedToken = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    if (receivedToken !== expectedAuth) {
+        console.log('Token mismatch - Expected:', expectedAuth, 'Received:', receivedToken);
+        return res.status(401).json({ error: 'Invalid token' });
     }
     
     // Simple rate limiting
@@ -91,7 +115,11 @@ app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy', 
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        trackingLinks: trackingData.size,
+        totalClicks: Array.from(trackingData.values()).reduce((sum, data) => sum + (data.clicks?.length || 0), 0),
+        configuredToken: process.env.ADMIN_TOKEN ? 'Environment variable set' : 'Using default',
+        dataFile: fs.existsSync(DATA_FILE) ? 'Exists' : 'Missing'
     });
 });
 
@@ -432,11 +460,19 @@ function extractClientInfo(req) {
     };
 }
 
-// Save data to file
+// Save data to file with file locking
 function saveData() {
     try {
         const dataObj = Object.fromEntries(trackingData);
-        fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
+        const tempFile = DATA_FILE + '.tmp';
+        
+        // Write to temporary file first
+        fs.writeFileSync(tempFile, JSON.stringify(dataObj, null, 2));
+        
+        // Rename to actual file (atomic operation)
+        fs.renameSync(tempFile, DATA_FILE);
+        
+        console.log('Data saved successfully at ' + new Date().toISOString());
     } catch (error) {
         console.error('Failed to save data:', error);
     }
@@ -1656,6 +1692,11 @@ app.listen(PORT, () => {
     console.log('🚀 ResumeBoost Pro running on port ' + PORT);
     console.log('🌐 Available at: https://resumeboost-pro.up.railway.app');
     console.log('📊 Dashboard: https://resumeboost-pro.up.railway.app/dashboard');
-    console.log('🔐 Admin token: ' + (process.env.ADMIN_TOKEN || 'admin-secret-token'));
+    
+    const configuredToken = process.env.ADMIN_TOKEN || 'admin-secret-token';
+    console.log('🔐 Admin token configured: ' + (process.env.ADMIN_TOKEN ? 'Using environment variable' : 'Using default (admin-secret-token)'));
     console.log('📝 Total tracking links: ' + trackingData.size);
+    
+    // Log the actual token for debugging (remove in production)
+    console.log('🔑 Current admin token: ' + configuredToken);
 });
