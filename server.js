@@ -39,9 +39,14 @@ try {
 
 // Periodically save data
 setInterval(() => {
-    const dataObj = Object.fromEntries(trackingData);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
-}, 10000);
+    try {
+        const dataObj = Object.fromEntries(trackingData);
+        fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
+        console.log('Data saved: ' + new Date().toISOString() + ' - ' + trackingData.size + ' links');
+    } catch (error) {
+        console.error('Failed to save data:', error);
+    }
+}, 30000); // Save every 30 seconds
 
 // Generate unique tracking ID
 function generateTrackingId() {
@@ -156,6 +161,9 @@ app.post('/api/create-link', requireAuth, (req, res) => {
         };
         
         trackingData.set(trackingId, metadata);
+        
+        // Save data after creating new link
+        saveData();
         
         const protocol = req.headers['x-forwarded-proto'] || 'http';
         const host = req.headers.host || DOMAIN;
@@ -424,6 +432,16 @@ function extractClientInfo(req) {
     };
 }
 
+// Save data to file
+function saveData() {
+    try {
+        const dataObj = Object.fromEntries(trackingData);
+        fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
+    } catch (error) {
+        console.error('Failed to save data:', error);
+    }
+}
+
 // Extract tracking logic to reusable function
 function handleTracking(req, res, trackingId) {
     const clientInfo = extractClientInfo(req);
@@ -431,6 +449,8 @@ function handleTracking(req, res, trackingId) {
     if (trackingData.has(trackingId)) {
         trackingData.get(trackingId).clicks.push(clientInfo);
         console.log('Bot interaction: ' + clientInfo.ip + ' - ' + clientInfo.userAgent);
+        // Save data after each click
+        saveData();
     } else {
         console.log('Unknown tracking ID accessed: ' + trackingId);
     }
@@ -509,6 +529,8 @@ app.post('/api/js-track/:id', (req, res) => {
     
     if (trackingData.has(trackingId)) {
         trackingData.get(trackingId).clicks.push(jsInfo);
+        // Save data after JavaScript tracking
+        saveData();
     }
     
     saveInteraction(trackingId, jsInfo);
@@ -1007,6 +1029,7 @@ app.get('/dashboard', (req, res) => {
                 <button onclick="authenticate()">🚀 Connect to Dashboard</button>
                 <button onclick="refreshData()" id="refreshBtn" style="margin-left: 10px; background: #10b981; display: none;">🔄 Refresh</button>
                 <button onclick="exportCSV()" id="exportBtn" style="margin-left: 10px; background: #ec4899; display: none;">📥 Export CSV</button>
+                <button onclick="logout()" id="logoutBtn" style="margin-left: 10px; background: #ef4444; display: none;">🚪 Logout</button>
                 <div id="status" style="margin-top: 15px;"></div>
             </div>
             
@@ -1079,27 +1102,62 @@ app.get('/dashboard', (req, res) => {
     </div>
     
     <script>
-        let token = "";
+        let token = localStorage.getItem('adminToken') || "";
         let allVisitors = [];
         let refreshInterval;
         
-        function authenticate() {
-            token = document.getElementById("token").value;
+        // Check if already authenticated on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (token) {
+                // Try to authenticate with saved token
+                authenticate(true);
+            } else {
+                document.getElementById('token').focus();
+            }
+        });
+        
+        function authenticate(isAutoLogin = false) {
+            if (!isAutoLogin) {
+                token = document.getElementById("token").value;
+            }
+            
             fetch("/api/dashboard", {
                 headers: { "Authorization": "Bearer " + token }
             })
-            .then(r => r.ok ? r.json() : Promise.reject("Invalid token"))
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error("Invalid token");
+                }
+                return r.json();
+            })
             .then(data => {
+                // Save token to localStorage on successful auth
+                localStorage.setItem('adminToken', token);
+                document.getElementById("token").value = token;
                 document.getElementById("status").innerHTML = '<span class="success">✅ Connected successfully!</span>';
                 document.getElementById("dashboard").classList.remove("hidden");
                 document.getElementById("refreshBtn").style.display = "inline-block";
                 document.getElementById("exportBtn").style.display = "inline-block";
+                document.getElementById("logoutBtn").style.display = "inline-block";
                 updateDashboard(data);
                 startAutoRefresh();
             })
             .catch(e => {
-                document.getElementById("status").innerHTML = '<span class="error">❌ ' + e + '</span>';
+                if (isAutoLogin) {
+                    // Clear invalid saved token
+                    localStorage.removeItem('adminToken');
+                    token = "";
+                    document.getElementById('token').focus();
+                } else {
+                    document.getElementById("status").innerHTML = '<span class="error">❌ ' + e.message + '</span>';
+                }
             });
+        }
+        
+        function logout() {
+            localStorage.removeItem('adminToken');
+            token = "";
+            location.reload();
         }
         
         function startAutoRefresh() {
@@ -1123,7 +1181,24 @@ app.get('/dashboard', (req, res) => {
         
         function exportCSV() {
             if (!token) return;
-            window.location.href = "/api/export/csv?token=" + token;
+            fetch("/api/export/csv", {
+                headers: { "Authorization": "Bearer " + token }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'visitor-data.csv';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(e => {
+                alert('Export failed: ' + e.message);
+            });
         }
         
         function updateDashboard(data) {
@@ -1490,8 +1565,8 @@ app.get('/dashboard', (req, res) => {
                     document.getElementById('campaign').value = '';
                     document.getElementById('customPath').value = '';
                     
-                    // Refresh data after 10 second
-                    setTimeout(refreshData, 10000);
+                    // Refresh data after 1 second
+                    setTimeout(refreshData, 1000);
                 } else {
                     document.getElementById('result').innerHTML = \`
                         <div style="background: #fee2e2; border: 2px solid #fca5a5; padding: 20px; border-radius: 8px;">
@@ -1567,8 +1642,13 @@ app.use((req, res) => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('Saving data before shutdown...');
-    const dataObj = Object.fromEntries(trackingData);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
+    saveData();
+    process.exit(0);
+});
+
+process.on('SIGINT', () => {
+    console.log('Saving data before shutdown...');
+    saveData();
     process.exit(0);
 });
 
