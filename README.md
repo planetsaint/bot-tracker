@@ -8,6 +8,9 @@ A sophisticated bot detection and user behavior analytics platform designed for 
 
 ## Project Overview
 
+<img width="1112" height="904" alt="Screenshot from 2025-08-01 23-12-54" src="https://github.com/user-attachments/assets/c7763213-e06f-4ddb-8117-51a163ca645f" />
+
+
 ResumeBoost Pro is a dual-purpose application that serves as:
 
 1. **Front-end**: A convincing resume optimization service that appears legitimate to end users
