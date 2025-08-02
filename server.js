@@ -41,7 +41,7 @@ try {
 setInterval(() => {
     const dataObj = Object.fromEntries(trackingData);
     fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
-}, 60000);
+}, 10000);
 
 // Generate unique tracking ID
 function generateTrackingId() {
@@ -1108,7 +1108,7 @@ app.get('/dashboard', (req, res) => {
                 if (token && !document.getElementById("dashboard").classList.contains("hidden")) {
                     refreshData();
                 }
-            }, 60000); // Refresh every 60 seconds
+            }, 10000); // Refresh every 10 seconds
         }
         
         function refreshData() {
@@ -1490,8 +1490,8 @@ app.get('/dashboard', (req, res) => {
                     document.getElementById('campaign').value = '';
                     document.getElementById('customPath').value = '';
                     
-                    // Refresh data after 60 second
-                    setTimeout(refreshData, 60000);
+                    // Refresh data after 10 second
+                    setTimeout(refreshData, 10000);
                 } else {
                     document.getElementById('result').innerHTML = \`
                         <div style="background: #fee2e2; border: 2px solid #fca5a5; padding: 20px; border-radius: 8px;">
