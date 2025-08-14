@@ -92,25 +92,18 @@ app.get('/health', (req, res) => {
 
 // Generate friendly URL path
 function generateFriendlyPath() {
-    const adjectives = [
-        'free', 'instant', 'professional', 'premium', 'advanced', 'smart', 'quick', 'easy',
-        'modern', 'expert', 'perfect', 'ultimate', 'powerful', 'enhanced', 'optimized'
-    ];
-    const nouns = [
-        'credit', 'score', 'report', 'monitoring', 'protection', 'identity', 'financial',
-        'security', 'alerts', 'tracker', 'guardian', 'shield', 'defender', 'watch'
-    ];
-    const actions = [
-        'check', 'monitor', 'track', 'protect', 'secure', 'guard', 'watch', 'scan',
-        'analyze', 'verify', 'validate', 'review', 'assess', 'evaluate', 'inspect'
+    const paths = [
+        'onboarding', 'application', 'apply', 'rental-app', 'tenant-screening',
+        'background-check', 'credit-check', 'rental-verification', 'lease-application',
+        'tenant-application', 'rental-form', 'housing-app', 'apartment-app',
+        'rental-inquiry', 'tenant-portal', 'rental-process', 'tenant-onboarding',
+        'rental-screening', 'tenant-verify', 'rental-qualify'
     ];
     
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    const action = actions[Math.floor(Math.random() * actions.length)];
+    const path = paths[Math.floor(Math.random() * paths.length)];
     const num = Math.floor(Math.random() * 999) + 1;
     
-    return adj + '-' + noun + '-' + action + '-' + num;
+    return path + '-' + num;
 }
 
 // Create tracking link endpoint
@@ -127,13 +120,13 @@ app.post('/api/create-link', requireAuth, (req, res) => {
         } else {
             switch (urlType) {
                 case 'promo':
-                    promoCode = 'CREDIT' + Math.floor(Math.random() * 9000 + 1000);
+                    promoCode = 'RENT' + Math.floor(Math.random() * 9000 + 1000);
                     break;
                 case 'tool':
-                    friendlyPath = 'tools/credit-monitor';
+                    friendlyPath = 'tools/rental-application';
                     break;
                 case 'company':
-                    const companies = ['experian', 'equifax', 'transunion', 'creditkarma', 'creditwise'];
+                    const companies = ['zillow', 'apartments', 'rentals', 'trulia', 'realtor', 'padmapper'];
                     const company = companies[Math.floor(Math.random() * companies.length)];
                     friendlyPath = 'partner/' + company;
                     break;
