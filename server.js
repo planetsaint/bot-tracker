@@ -6,7 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 const DOMAIN = process.env.DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || 'rentnstarter.up.railway.app';
 
 // Security middleware
