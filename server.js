@@ -7,7 +7,6 @@ const helmet = require('helmet');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 const DOMAIN = process.env.DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || 'rentnstarter.up.railway.app';
 
 // Security middleware
