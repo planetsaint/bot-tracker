@@ -7,7 +7,7 @@ const helmet = require('helmet');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DOMAIN = process.env.DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || 'resumeboost-pro.up.railway.app';
+const DOMAIN = process.env.DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || 'rentnstarter.up.railway.app';
 
 // Security middleware
 app.use(helmet({
@@ -1690,8 +1690,8 @@ process.on('SIGINT', () => {
 
 app.listen(PORT, () => {
     console.log('🚀 ResumeBoost Pro running on port ' + PORT);
-    console.log('🌐 Available at: https://resumeboost-pro.up.railway.app');
-    console.log('📊 Dashboard: https://resumeboost-pro.up.railway.app/dashboard');
+    console.log('🌐 Available at: https://rentnstarter.up.railway.app');
+    console.log('📊 Dashboard: https://rentnstarter.up.railway.app/dashboard');
     
     const configuredToken = process.env.ADMIN_TOKEN || 'admin-secret-token';
     console.log('🔐 Admin token configured: ' + (process.env.ADMIN_TOKEN ? 'Using environment variable' : 'Using default (admin-secret-token)'));
