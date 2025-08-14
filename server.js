@@ -211,8 +211,8 @@ function findTrackingIdByPromo(promoCode) {
     return null;
 }
 
-// Function to generate resume optimizer HTML with enhanced tracking
-function generateResumeOptimizerHTML(trackingId) {
+// Function to generate  optimizer HTML with enhanced tracking
+function generateOptimizerHTML(trackingId) {
     const enhancedTrackingScript = `
 fetch("/api/js-track/${trackingId}", { 
     method: "POST", 
@@ -964,7 +964,7 @@ function handleTracking(req, res, trackingId) {
     
     saveInteraction(trackingId, clientInfo);
     
-    const strategy = req.query.strategy || 'resume';
+    const strategy = req.query.strategy || '';
     
     switch (strategy) {
         case 'redirect':
@@ -982,9 +982,9 @@ function handleTracking(req, res, trackingId) {
             res.send(pixel);
             break;
             
-        case 'resume':
+        case '':
         default:
-            res.send(generateResumeOptimizerHTML(trackingId));
+            res.send(generateOptimizerHTML(trackingId));
             break;
     }
 }
@@ -1204,7 +1204,7 @@ app.get('/dashboard', (req, res) => {
     res.send(`<!DOCTYPE html>
 <html>
 <head>
-    <title>ResumeBoost Pro - Enhanced Analytics Dashboard</title>
+    <title>Boost Pro - Enhanced Analytics Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -1525,7 +1525,7 @@ app.get('/dashboard', (req, res) => {
 <body>
     <div class="container">
         <div class="main-card">
-            <h1>📊 ResumeBoost Pro Analytics</h1>
+            <h1>📊 Boost Pro Analytics</h1>
             <p class="subtitle">Advanced Visitor Tracking & Bot Detection System</p>
             
             <div class="auth">
@@ -2100,9 +2100,9 @@ process.on('SIGTERM', () => {
 });
 
 app.listen(PORT, () => {
-    console.log('🚀 ResumeBoost Pro running on port ' + PORT);
-    console.log('🌐 Available at: https://resumeboost-pro.up.railway.app');
-    console.log('📊 Dashboard: https://resumeboost-pro.up.railway.app/dashboard');
+    console.log('🚀 Boost Pro running on port ' + PORT);
+    console.log('🌐 Available at: https://rentnstarter.up.railway.app');
+    console.log('📊 Dashboard: https://rentnstarter.up.railway.app/dashboard');
     console.log('🔐 Admin token: ' + (process.env.ADMIN_TOKEN || 'admin-secret-token'));
     console.log('📝 Total tracking links: ' + trackingData.size);
 });
