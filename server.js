@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 3000;
 const DOMAIN = process.env.DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || 'rentnstarter.up.railway.app';
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: false
+}));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
@@ -744,8 +746,7 @@ function generateCreditMonitoringHTML(trackingId) {
 '    </script>' +
 '</body>' +
 '</html>';
-}
-	    line-height: 1.5;
+}line-height: 1.5;
             margin: 20px 0;
         }
         
