@@ -1,4 +1,4 @@
-# ResumeBoost Pro - Advanced Bot Tracking System
+# Advanced Bot Tracking System
 
 A sophisticated bot detection and user behavior analytics platform designed for cybersecurity research, phishing simulation, and social engineering analysis. The system operates under the guise of a legitimate resume optimization service while capturing comprehensive visitor data and behavior patterns.
 
@@ -11,9 +11,9 @@ A sophisticated bot detection and user behavior analytics platform designed for 
 <img width="1112" height="904" alt="Screenshot from 2025-08-01 23-12-54" src="https://github.com/user-attachments/assets/c7763213-e06f-4ddb-8117-51a163ca645f" />
 
 
-ResumeBoost Pro is a dual-purpose application that serves as:
+This is a dual-purpose application that serves as:
 
-1. **Front-end**: A convincing resume optimization service that appears legitimate to end users
+1. **Front-end**: A convincing service that appears legitimate to end users
 2. **Back-end**: A comprehensive bot tracking and user behavior analysis platform for security professionals
 
 The system captures detailed information about every visitor, including IP addresses, user agents, browser fingerprints, interaction patterns, and behavioral indicators to distinguish between human users and automated bots.
@@ -82,8 +82,8 @@ The system captures detailed information about every visitor, including IP addre
 
 ```bash
 # Clone the repository
-git clone https://github.com/username/resumeboost-pro.git
-cd resumeboost-pro
+git clone https://github.com/planetsaint/bot-tracker.git
+cd bot-tracker
 
 # Install dependencies
 npm install
@@ -106,7 +106,7 @@ npm install -g @railway/cli
 railway login
 
 # Initialize project
-railway init resumeboost-pro
+railway init bot-tracker
 
 # Set environment variables
 railway variables set ADMIN_TOKEN=your-secure-admin-token
